@@ -245,6 +245,19 @@ async function handleTranscribe() {
   store.showLoading('🤖 AI đang phân tích audio...\nQuá trình này có thể mất 30-60 giây.');
 
   try {
+    // 0: Check duration (Fail-fast for long audio)
+    const duration = await new Promise((resolve) => {
+      const audio = new Audio(URL.createObjectURL(file));
+      audio.onloadedmetadata = () => resolve(audio.duration);
+      audio.onerror = () => resolve(0); // fallback
+    });
+
+    if (duration > 125) { // 2 minutes + 5 seconds grace
+      store.hideLoading();
+      showToast('⚠️ Vui lòng chọn audio ngắn dưới 2 phút. Các file quá dài sẽ làm AI nhận diện thời gian bị sai lệch (ảo giác).', 'error');
+      return;
+    }
+
     // Step 1: Transcribe
     const sentences = await transcribeAudio(file, language);
 

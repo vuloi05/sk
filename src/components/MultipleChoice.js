@@ -77,15 +77,16 @@ export function renderMultipleChoice() {
   const displaySentence = words.join(' ');
 
   // Shuffle options (1 answer + up to 3 distractors)
-  let distractors = mcqItem.distractors;
-  if (!distractors || distractors.length === 0) {
-    // Fallback: pick random words from the sentence itself
-    const otherWords = words.filter(w => w !== mcqItem.answer && w !== '____' && w.length > 2);
-    distractors = shuffleArray(otherWords).slice(0, 3);
-    while (distractors.length < 3) {
-      distractors.push(['(trống)', '(ẩn)', '(lỗi)'][distractors.length]);
-    }
+  let distractors = Array.isArray(mcqItem.distractors) && mcqItem.distractors.length > 0 
+    ? mcqItem.distractors.filter(d => typeof d === 'string' && d.trim() !== '') 
+    : [];
+  
+  // Pad if not enough distractors
+  const fallbacks = ['(Sai 1)', '(Sai 2)', '(Sai 3)'];
+  while (distractors.length < 3) {
+    distractors.push(fallbacks[distractors.length]);
   }
+  
   const options = shuffleArray([mcqItem.answer, ...distractors.slice(0, 3)]);
   const letters = ['A', 'B', 'C', 'D'];
 

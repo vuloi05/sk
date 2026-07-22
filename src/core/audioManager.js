@@ -130,7 +130,7 @@ class AudioManager {
     this._sentenceEnd = endTime;
     this._repeatCount = repeatCount;
     this._currentRepeat = 0;
-    this._audio.currentTime = startTime;
+    this._audio.currentTime = this._sentenceStart;
     try {
       await this._audio.play();
     } catch (err) {

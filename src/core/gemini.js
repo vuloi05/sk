@@ -57,15 +57,15 @@ export async function transcribeAudio(audioFile, language) {
 
 Return a JSON array of sentences. Each sentence should have:
 - "text": the transcribed text of that sentence
-- "startTime": approximate start time in seconds (number)
-- "endTime": approximate end time in seconds (number)
+- "startTime": EXACT start time in seconds with 2 decimal precision (e.g. 1.25)
+- "endTime": EXACT end time in seconds with 2 decimal precision (e.g. 3.40)
 
 Rules:
 - Split the audio into natural sentence-level segments
 - For Japanese, use standard kanji and hiragana (no romaji)
 - For English, use standard capitalization and punctuation
 - Be as accurate as possible with the transcription
-- Estimate timestamps as accurately as possible
+- EXACT TIMESTAMPS are critical for a dictation app. Do not estimate, listen closely for the exact millisecond a sentence starts and stops.
 - Return ONLY the JSON array, no markdown fences, no explanation
 
 Example output:
