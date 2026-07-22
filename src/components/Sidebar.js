@@ -1,5 +1,5 @@
 /**
- * DictaFlow — Header Component
+ * DictaFlow — Sidebar Component
  */
 
 import { h } from '../utils/helpers.js';
@@ -10,12 +10,12 @@ import { ROUTES } from '../utils/constants.js';
  * Render the app header.
  * @returns {HTMLElement}
  */
-export function renderHeader() {
-  const header = h('header', { className: 'app-header' },
-    h('div', { className: 'header-inner' },
+export function renderSidebar() {
+  const sidebar = h('aside', { className: 'app-sidebar' },
+    h('div', { className: 'sidebar-inner' },
       // Logo
       h('a', {
-        className: 'header-logo',
+        className: 'sidebar-logo',
         onClick: (e) => {
           e.preventDefault();
           store.set('route', ROUTES.LIBRARY);
@@ -36,7 +36,7 @@ export function renderHeader() {
         `,
       }),
       // Navigation
-      h('nav', { className: 'header-nav' },
+      h('nav', { className: 'sidebar-nav' },
         h('button', {
           className: 'btn btn-ghost btn-sm',
           onClick: () => store.set('route', ROUTES.LIBRARY),
@@ -71,25 +71,44 @@ export function renderHeader() {
         
         // Auth UI
         store.get('currentUser') 
-          ? h('div', { className: 'user-profile flex items-center gap-xs ml-md' },
-              h('div', { 
-                className: 'avatar',
-                style: {
-                  width: '32px', height: '32px', borderRadius: '50%',
-                  background: 'var(--color-primary)', color: 'white',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 'bold', fontSize: '14px', cursor: 'pointer'
-                },
-                onClick: async () => {
-                  if (confirm('Bạn muốn đăng xuất?')) {
-                    const { signOutUser } = await import('../core/supabase.js');
-                    await signOutUser();
-                  }
-                }
-              }, store.get('currentUser').user_metadata?.full_name?.charAt(0)?.toUpperCase() || 'U')
-            )
+          ? (() => {
+              const user = store.get('currentUser');
+              const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+              const fallback = user.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 'U';
+
+              return h('div', { className: 'user-profile flex items-center gap-xs mt-md' },
+                avatarUrl 
+                  ? h('img', { 
+                      src: avatarUrl,
+                      style: {
+                        width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer',
+                        objectFit: 'cover', border: '2px solid var(--color-border)'
+                      },
+                      onClick: async () => {
+                        const { renderProfileModal } = await import('./ProfileModal.js');
+                        const modal = renderProfileModal(() => modal.remove());
+                        if (modal) document.body.appendChild(modal);
+                      }
+                    })
+                  : h('div', { 
+                      className: 'avatar',
+                      style: {
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        background: 'var(--color-primary)', color: 'white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 'bold', fontSize: '18px', cursor: 'pointer',
+                        border: '2px solid var(--color-border)'
+                      },
+                      onClick: async () => {
+                        const { renderProfileModal } = await import('./ProfileModal.js');
+                        const modal = renderProfileModal(() => modal.remove());
+                        if (modal) document.body.appendChild(modal);
+                      }
+                    }, fallback)
+              );
+            })()
           : h('button', {
-              className: 'btn btn-outline btn-sm ml-md',
+              className: 'btn btn-outline btn-sm mt-md w-full',
               onClick: async () => {
                 const { renderAuthModal } = await import('./AuthModal.js');
                 const modal = renderAuthModal(() => {
@@ -98,9 +117,9 @@ export function renderHeader() {
                 document.body.appendChild(modal);
               }
             }, 'Đăng nhập')
-      ),
-    ),
+      )
+    )
   );
 
-  return header;
+  return sidebar;
 }
