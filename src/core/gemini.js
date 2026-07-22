@@ -8,6 +8,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { sleep } from '../utils/helpers.js';
 
 /** @type {GoogleGenerativeAI|null} */
 let genAI = null;
@@ -16,8 +17,15 @@ let genAI = null;
  * Initialize the Gemini client with user's API key.
  * @param {string} apiKey
  */
-export function initGemini(apiKey) {
+export async function initGemini(apiKey) {
   genAI = new GoogleGenerativeAI(apiKey);
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const data = await response.json();
+    console.log('Available Models:', data.models.map(m => m.name));
+  } catch (err) {
+    console.error('Failed to list models:', err);
+  }
 }
 
 /**
@@ -37,7 +45,7 @@ export function isGeminiReady() {
 export async function transcribeAudio(audioFile, language) {
   if (!genAI) throw new Error('Vui lòng nhập Gemini API key trước.');
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
 
   // Convert file to base64
   const arrayBuffer = await audioFile.arrayBuffer();
@@ -105,7 +113,7 @@ Example output:
 export async function generateGapFillBatch(sentences, language, difficulty) {
   if (!genAI) throw new Error('Vui lòng nhập Gemini API key trước.');
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
 
   const langName = language === 'ja' ? 'Japanese' : 'English';
 
@@ -167,7 +175,7 @@ Return ONLY the JSON array, no explanation.`;
 export async function generateMCQBatch(items, language) {
   if (!genAI) throw new Error('Vui lòng nhập Gemini API key trước.');
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
 
   const langName = language === 'ja' ? 'Japanese' : 'English';
 
@@ -220,8 +228,20 @@ Return ONLY the JSON array, no explanation.`;
  * @returns {Promise<Array>} Sentences enriched with gapFillData and mcqData
  */
 export async function enrichSentences(sentences, language, level) {
+  // Wait to avoid rate limit (429) between transcription and enrich on free tier
+  await sleep(4000);
+
   // Step 1: Generate gap-fill data
-  const gapFillResults = await generateGapFillBatch(sentences, language, level);
+  let gapFillResults = [];
+  try {
+    gapFillResults = await generateGapFillBatch(sentences, language, level);
+  } catch (err) {
+    console.warn('[Gemini] Gap fill batch failed, skipping to avoid crash:', err);
+    return sentences; // Return raw sentences to degrade gracefully
+  }
+
+  // Wait again to avoid rate limit before MCQ generation
+  await sleep(4000);
 
   // Step 2: Prepare MCQ items from gap-fill hidden words
   const mcqItems = [];
@@ -251,12 +271,18 @@ export async function enrichSentences(sentences, language, level) {
   return sentences.map((s, i) => {
     const gf = gapFillResults.find(g => g.sentenceIndex === i);
     const mcqs = mcqResults
-      .filter((_, mi) => mcqItems[mi]?.sentenceIndex === i)
-      .map((m, mi) => ({
-        wordIndex: mcqItems[mi]?.wordIndex,
-        answer: m.answer,
-        distractors: m.distractors,
-      }));
+      .filter(m => {
+        const item = mcqItems[m.itemIndex];
+        return item && item.sentenceIndex === i;
+      })
+      .map(m => {
+        const item = mcqItems[m.itemIndex];
+        return {
+          wordIndex: item.wordIndex,
+          answer: item.hiddenWord,
+          distractors: m.distractors,
+        };
+      });
 
     return {
       ...s,

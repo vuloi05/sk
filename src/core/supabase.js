@@ -126,7 +126,7 @@ export async function createLesson(lessonData, sentences, audioFile) {
       level: lessonData.level,
       description: lessonData.description || '',
       audio_path: audioPath,
-      duration_seconds: lessonData.duration || 0,
+      duration_seconds: Math.round(lessonData.duration || 0),
       sentence_count: sentences.length,
       tags: lessonData.tags || '',
     })
@@ -135,7 +135,7 @@ export async function createLesson(lessonData, sentences, audioFile) {
 
   if (lessonError) {
     console.error('[Supabase] Lesson insert error:', lessonError);
-    throw new Error('Không thể tạo bài luyện.');
+    throw new Error('Không thể tạo bài luyện: ' + lessonError.message);
   }
 
   // 3. Insert sentences

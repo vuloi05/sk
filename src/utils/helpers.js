@@ -92,6 +92,8 @@ export function createElement(tag, attrs = {}, ...children) {
       Object.assign(el.dataset, value);
     } else if (key === 'innerHTML') {
       el.innerHTML = value;
+    } else if (typeof value === 'boolean') {
+      el[key] = value;
     } else {
       el.setAttribute(key, value);
     }

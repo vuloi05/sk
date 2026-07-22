@@ -58,7 +58,15 @@ export function renderMultipleChoice() {
   }
 
   // Build sentence text with blank
-  const words = sentence.content.split(/\s+/).filter(Boolean);
+  let gapData = safeJsonParse(sentence.gap_fill_data, null);
+  let words = [];
+  
+  if (gapData && gapData.words) {
+    words = [...gapData.words];
+  } else {
+    words = sentence.content.split(/\s+/).filter(Boolean);
+  }
+
   if (mcqItem.wordIndex !== undefined && mcqItem.wordIndex >= 0 && mcqItem.wordIndex < words.length) {
     words[mcqItem.wordIndex] = '____';
   } else {
@@ -69,7 +77,15 @@ export function renderMultipleChoice() {
   const displaySentence = words.join(' ');
 
   // Shuffle options (1 answer + up to 3 distractors)
-  const distractors = mcqItem.distractors || ['(Sai 1)', '(Sai 2)', '(Sai 3)'];
+  let distractors = mcqItem.distractors;
+  if (!distractors || distractors.length === 0) {
+    // Fallback: pick random words from the sentence itself
+    const otherWords = words.filter(w => w !== mcqItem.answer && w !== '____' && w.length > 2);
+    distractors = shuffleArray(otherWords).slice(0, 3);
+    while (distractors.length < 3) {
+      distractors.push(['(trống)', '(ẩn)', '(lỗi)'][distractors.length]);
+    }
+  }
   const options = shuffleArray([mcqItem.answer, ...distractors.slice(0, 3)]);
   const letters = ['A', 'B', 'C', 'D'];
 
