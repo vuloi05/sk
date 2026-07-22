@@ -12,6 +12,9 @@ class Store {
   constructor() {
     this._listeners = new Map();
     this._state = {
+      /** @type {Object|null} Current logged in user profile */
+      currentUser: null,
+
       /** @type {string|null} Gemini API key */
       apiKey: localStorage.getItem(STORAGE_KEYS.API_KEY) || null,
 

@@ -49,9 +49,55 @@ export function renderHeader() {
         }, '➕ Tạo bài'),
         h('button', {
           className: 'btn btn-ghost btn-sm',
+          id: 'nav-theme',
+          title: 'Đổi giao diện (Sáng/Tối)',
+          onClick: (e) => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            if (newTheme === 'dark') {
+              document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+              document.documentElement.removeAttribute('data-theme');
+            }
+            localStorage.setItem('dictaflow_theme', newTheme);
+            e.currentTarget.innerText = newTheme === 'dark' ? '🌞' : '🌙';
+          }
+        }, document.documentElement.getAttribute('data-theme') === 'dark' ? '🌞' : '🌙'),
+        h('button', {
+          className: 'btn btn-ghost btn-sm',
           onClick: () => store.set('route', ROUTES.SETTINGS),
           id: 'nav-settings',
         }, '⚙️'),
+        
+        // Auth UI
+        store.get('currentUser') 
+          ? h('div', { className: 'user-profile flex items-center gap-xs ml-md' },
+              h('div', { 
+                className: 'avatar',
+                style: {
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  background: 'var(--color-primary)', color: 'white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 'bold', fontSize: '14px', cursor: 'pointer'
+                },
+                onClick: async () => {
+                  if (confirm('Bạn muốn đăng xuất?')) {
+                    const { signOutUser } = await import('../core/supabase.js');
+                    await signOutUser();
+                  }
+                }
+              }, store.get('currentUser').user_metadata?.full_name?.charAt(0)?.toUpperCase() || 'U')
+            )
+          : h('button', {
+              className: 'btn btn-outline btn-sm ml-md',
+              onClick: async () => {
+                const { renderAuthModal } = await import('./AuthModal.js');
+                const modal = renderAuthModal(() => {
+                  modal.remove();
+                });
+                document.body.appendChild(modal);
+              }
+            }, 'Đăng nhập')
       ),
     ),
   );

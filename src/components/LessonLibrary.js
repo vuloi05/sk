@@ -172,8 +172,16 @@ async function openLessonDetail(lesson) {
   try {
     const { lesson: lessonData, sentences } = await fetchLesson(lesson.id);
 
-    // Load audio
-    if (lessonData.audio_path && isSupabaseConfigured()) {
+    // Load audio based on source type (Strategy Pattern)
+    if (lessonData.source_type === 'youtube' && lessonData.youtube_url) {
+      // YouTube lesson: extract video ID and load YouTube player
+      const { extractVideoId } = await import('../utils/youtubeUtils.js');
+      const videoId = extractVideoId(lessonData.youtube_url);
+      if (videoId) {
+        await audioManager.loadYouTube(videoId);
+      }
+    } else if (lessonData.audio_path && isSupabaseConfigured()) {
+      // Regular audio lesson: load from Supabase Storage
       const audioUrl = getAudioUrl(lessonData.audio_path);
       audioManager.loadUrl(audioUrl);
     }
@@ -192,3 +200,4 @@ async function openLessonDetail(lesson) {
     showToast(err.message || 'Không thể tải bài luyện.', 'error');
   }
 }
+

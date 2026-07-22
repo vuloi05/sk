@@ -19,6 +19,13 @@ export function getSupabase() {
       return null;
     }
     supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Listen for auth changes and update store
+    supabase.auth.onAuthStateChange((event, session) => {
+      import('./store.js').then(({ store }) => {
+        store.set('currentUser', session?.user || null);
+      });
+    });
   }
   return supabase;
 }
@@ -92,9 +99,10 @@ export async function fetchLesson(lessonId) {
 
 /**
  * Create a new lesson and upload its audio + sentences.
+ * Supports both 'upload' (audio file) and 'youtube' (video URL) source types.
  * @param {Object} lessonData - Lesson metadata
  * @param {Array} sentences - Array of sentence objects
- * @param {File} audioFile - Audio file to upload
+ * @param {File|null} audioFile - Audio file to upload (null for YouTube lessons)
  * @returns {Promise<Object>} Created lesson
  */
 export async function createLesson(lessonData, sentences, audioFile) {
@@ -103,33 +111,43 @@ export async function createLesson(lessonData, sentences, audioFile) {
     throw new Error('Supabase chưa được cấu hình. Vui lòng liên hệ admin.');
   }
 
-  // 1. Upload audio to Supabase Storage
-  const audioPath = `lessons/${Date.now()}_${audioFile.name}`;
-  const { error: uploadError } = await client.storage
-    .from('audio')
-    .upload(audioPath, audioFile, {
-      contentType: audioFile.type,
-      upsert: false,
-    });
+  const isYouTube = lessonData.sourceType === 'youtube';
+  let audioPath = null;
 
-  if (uploadError) {
-    console.error('[Supabase] Audio upload error:', uploadError);
-    throw new Error('Không thể upload file audio.');
+  // 1. Upload audio to Supabase Storage (only for 'upload' source type)
+  if (!isYouTube && audioFile) {
+    audioPath = `lessons/${Date.now()}_${audioFile.name}`;
+    const { error: uploadError } = await client.storage
+      .from('audio')
+      .upload(audioPath, audioFile, {
+        contentType: audioFile.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('[Supabase] Audio upload error:', uploadError);
+      throw new Error('Không thể upload file audio.');
+    }
   }
 
   // 2. Create lesson record
+  const lessonRow = {
+    title: lessonData.title,
+    language: lessonData.language,
+    level: lessonData.level,
+    description: lessonData.description || '',
+    audio_path: audioPath,
+    duration_seconds: Math.round(lessonData.duration || 0),
+    sentence_count: sentences.length,
+    tags: lessonData.tags || '',
+    author_id: (await client.auth.getUser()).data?.user?.id || null,
+    source_type: isYouTube ? 'youtube' : 'upload',
+    youtube_url: isYouTube ? lessonData.youtubeUrl : null,
+  };
+
   const { data: lesson, error: lessonError } = await client
     .from('lessons')
-    .insert({
-      title: lessonData.title,
-      language: lessonData.language,
-      level: lessonData.level,
-      description: lessonData.description || '',
-      audio_path: audioPath,
-      duration_seconds: Math.round(lessonData.duration || 0),
-      sentence_count: sentences.length,
-      tags: lessonData.tags || '',
-    })
+    .insert(lessonRow)
     .select()
     .single();
 
@@ -171,6 +189,64 @@ export function getAudioUrl(audioPath) {
   if (!client) return '';
   const { data } = client.storage.from('audio').getPublicUrl(audioPath);
   return data.publicUrl;
+}
+
+/* ============================================
+   Auth Operations (Phase 2)
+   ============================================ */
+
+export async function signUpUser(email, password, fullName) {
+  const client = getSupabase();
+  if (!client) throw new Error('Supabase chưa được cấu hình.');
+  const { data, error } = await client.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName,
+      },
+    },
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function signInUser(email, password) {
+  const client = getSupabase();
+  if (!client) throw new Error('Supabase chưa được cấu hình.');
+  const { data, error } = await client.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function signInWithGoogle() {
+  const client = getSupabase();
+  if (!client) throw new Error('Supabase chưa được cấu hình.');
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function signOutUser() {
+  const client = getSupabase();
+  if (!client) return;
+  const { error } = await client.auth.signOut();
+  if (error) throw new Error(error.message);
+}
+
+export async function getCurrentUser() {
+  const client = getSupabase();
+  if (!client) return null;
+  const { data: { user } } = await client.auth.getUser();
+  return user;
 }
 
 

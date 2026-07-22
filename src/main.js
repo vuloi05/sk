@@ -28,10 +28,39 @@ class App {
     // Subscribe to state changes
     store.subscribe('route', () => this.render());
     store.subscribe('loading', (isLoading) => this.updateLoading(isLoading));
+    store.subscribe('currentUser', () => this.render());
     
     // Initial render
+    this.initTheme();
     initToast();
     this.render();
+  }
+
+  /**
+   * Initialize Light/Dark theme from localStorage or OS preference
+   */
+  initTheme() {
+    let theme = localStorage.getItem('dictaflow_theme');
+    if (!theme) {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    
+    // Listen for OS theme changes if user hasn't explicitly set a preference
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('dictaflow_theme')) {
+        if (e.matches) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+      }
+    });
   }
 
   /**

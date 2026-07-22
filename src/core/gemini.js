@@ -103,6 +103,71 @@ Example output:
 }
 
 /**
+ * Transcribe a YouTube video using Gemini's multimodal capability.
+ * Gemini supports YouTube URLs directly via fileData.
+ * Returns the same interface as transcribeAudio (DIP principle).
+ * @param {string} youtubeUrl - Full YouTube URL (e.g. https://www.youtube.com/watch?v=...)
+ * @param {string} language - 'ja' or 'en'
+ * @returns {Promise<Array<{text: string, startTime: number, endTime: number}>>}
+ */
+export async function transcribeYouTube(youtubeUrl, language) {
+  if (!genAI) throw new Error('Vui lòng nhập Gemini API key trước.');
+
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
+
+  const langName = language === 'ja' ? 'Japanese' : 'English';
+
+  const prompt = `You are a professional transcription assistant. Watch this YouTube video and transcribe the spoken audio accurately in ${langName}.
+
+Return a JSON array of sentences. Each sentence should have:
+- "text": the transcribed text of that sentence
+- "startTime": EXACT start time in seconds with 2 decimal precision (e.g. 1.25)
+- "endTime": EXACT end time in seconds with 2 decimal precision (e.g. 3.40)
+
+Rules:
+- Split the audio into natural sentence-level segments
+- For Japanese, use standard kanji and hiragana (no romaji)
+- For English, use standard capitalization and punctuation
+- Be as accurate as possible with the transcription
+- EXACT TIMESTAMPS are critical for a dictation app. Do not estimate, listen closely for the exact millisecond a sentence starts and stops.
+- Ignore any background music, sound effects, or non-speech audio
+- Return ONLY the JSON array, no markdown fences, no explanation
+
+Example output:
+[
+  {"text": "Good morning everyone.", "startTime": 0, "endTime": 2.5},
+  {"text": "Today we will learn about...", "startTime": 2.5, "endTime": 5.0}
+]`;
+
+  const result = await model.generateContent([
+    prompt,
+    {
+      fileData: {
+        fileUri: youtubeUrl,
+        mimeType: 'video/mp4',
+      },
+    },
+  ]);
+
+  const responseText = result.response.text().trim();
+
+  // Parse JSON from response (handle potential markdown fences)
+  const jsonStr = responseText
+    .replace(/^```json?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+
+  try {
+    const sentences = JSON.parse(jsonStr);
+    if (!Array.isArray(sentences)) throw new Error('Response is not an array');
+    return sentences;
+  } catch (err) {
+    console.error('[Gemini] Failed to parse YouTube transcript:', responseText);
+    throw new Error('Không thể phân tích transcript từ video YouTube. Vui lòng thử lại.');
+  }
+}
+
+/**
  * Generate gap-fill data for a list of sentences.
  * AI chooses which words to hide based on word type and difficulty.
  * @param {Array<{text: string}>} sentences

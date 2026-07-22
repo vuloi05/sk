@@ -107,10 +107,22 @@ export function renderTranscriptEditor() {
  * Start practice with current transcript data (local only, no Supabase).
  * @param {Object} data
  */
-function practiceLocally(data) {
-  const file = store.get('uploadedFile');
-  if (file) {
-    audioManager.loadFile(file);
+async function practiceLocally(data) {
+  store.showLoading('Đang chuẩn bị bài luyện...');
+  
+  try {
+    if (data.sourceType === 'youtube' && data.youtubeVideoId) {
+      await audioManager.loadYouTube(data.youtubeVideoId);
+    } else {
+      const file = store.get('uploadedFile');
+      if (file) {
+        audioManager.loadFile(file);
+      }
+    }
+  } catch (err) {
+    store.hideLoading();
+    showToast('Lỗi khi tải media: ' + err.message, 'error');
+    return;
   }
 
   store.update({
@@ -119,6 +131,8 @@ function practiceLocally(data) {
       title: data.title,
       language: data.language,
       level: data.level,
+      source_type: data.sourceType || 'upload',
+      youtube_url: data.youtubeUrl || null,
     },
     currentSentences: data.sentences.map((s, i) => ({
       id: `local-s${i}`,
@@ -131,17 +145,23 @@ function practiceLocally(data) {
     })),
     currentSentenceIndex: 0,
     practiceResults: [],
-    route: ROUTES.MODE_SELECT,
   });
+  
+  store.hideLoading();
+  store.set('route', ROUTES.MODE_SELECT);
 }
 
 /**
  * Share lesson to Supabase community library.
+ * Supports both 'upload' (audio file) and 'youtube' source types.
  * @param {Object} data
  */
 async function shareToLibrary(data) {
+  const isYouTube = data.sourceType === 'youtube';
   const file = store.get('uploadedFile');
-  if (!file) {
+
+  // Only require file for upload source type
+  if (!isYouTube && !file) {
     showToast('File audio không còn. Vui lòng upload lại.', 'error');
     return;
   }
@@ -168,9 +188,11 @@ async function shareToLibrary(data) {
         description: data.description,
         tags: data.tags,
         duration,
+        sourceType: isYouTube ? 'youtube' : 'upload',
+        youtubeUrl: data.youtubeUrl || null,
       },
       data.sentences,
-      file,
+      isYouTube ? null : file,
     );
 
     showToast('🎉 Bài luyện đã được chia sẻ cho cộng đồng!', 'success');

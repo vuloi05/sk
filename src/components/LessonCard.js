@@ -46,6 +46,9 @@ export function renderLessonCard(lesson, onClick) {
         '📝 ', `${lesson.sentence_count} câu`,
       ),
       h('span', { className: `badge badge-${level.color}` }, level.label),
+      lesson.source_type === 'youtube'
+        ? h('span', { className: 'badge', style: { background: '#FF0000', color: 'white' } }, '▶ YouTube')
+        : null,
     ),
 
     // Tags
