@@ -1,0 +1,19 @@
+{
+  "name": "dictaflow",
+  "private": true,
+  "version": "1.0.0",
+  "description": "DictaFlow — Luyện nghe chép chính tả & điền từ",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@supabase/supabase-js": "^2.49.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.0"
+  }
+}
