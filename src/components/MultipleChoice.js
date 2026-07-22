@@ -200,6 +200,7 @@ function checkMCQ(selectedOpt, correctOpt, selectedIdx, totalOptions) {
   results.push({
     sentenceIndex: idx,
     expected: sentence.content,
+    userInput: selectedOpt,
     score: isCorrect ? 100 : 0,
     mode: 'mcq',
   });

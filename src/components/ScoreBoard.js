@@ -96,9 +96,12 @@ export function renderScoreBoard() {
             h('div', { className: 'card', style: { padding: 'var(--space-md)' } },
               h('div', { className: 'flex justify-between items-center mb-xs' },
                 h('span', { className: 'text-sm font-bold text-secondary' }, `Câu ${r.sentenceIndex + 1}`),
-                h('span', { className: `badge badge-${r.score >= 50 ? 'blue' : 'orange'}` }, `${r.score}%`)
+                r.score > 0 ? h('span', { className: `badge badge-${r.score >= 50 ? 'blue' : 'orange'}` }, `${r.score}%`) : null
               ),
-              h('div', { style: { lineHeight: '1.6' } }, r.expected)
+              h('div', { style: { lineHeight: '1.6' } }, 
+                h('div', { style: { color: 'var(--color-primary-dark)', fontWeight: '600' } }, `✓ Đáng lẽ phải là: ${r.expected || '...'}`),
+                h('div', { style: { color: 'var(--color-accent-orange)', marginTop: '4px' } }, `✗ Bạn đã chọn/nhập: ${r.userInput || '(Bỏ trống)'}`)
+              )
             )
           )
         )

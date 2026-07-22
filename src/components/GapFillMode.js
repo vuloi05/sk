@@ -144,12 +144,14 @@ function checkGapFill(blanks) {
   const sentence = sentences[idx];
 
   let correctCount = 0;
+  const userInputs = [];
 
   for (let i = 0; i < blanks.length; i++) {
     const input = document.getElementById(`blank-${i}`);
     if (!input) continue;
 
     const userAnswer = input.value.trim();
+    userInputs.push(userAnswer);
     const expected = blanks[i].answer;
     const isCorrect = scoreGapFill(expected, userAnswer);
 
@@ -167,6 +169,7 @@ function checkGapFill(blanks) {
         const correctionEl = h('span', {
           style: {
             color: 'var(--color-primary-dark)',
+            fontSize: 'var(--text-sm)',
             fontWeight: '600',
             marginLeft: '4px',
           },
@@ -183,6 +186,7 @@ function checkGapFill(blanks) {
   results.push({
     sentenceIndex: idx,
     expected: sentence.content,
+    userInput: userInputs.join(', '),
     score,
     correctBlanks: correctCount,
     totalBlanks: blanks.length,

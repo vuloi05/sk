@@ -100,8 +100,8 @@ export function createElement(tag, attrs = {}, ...children) {
   }
   for (const child of children) {
     if (child == null) continue;
-    if (typeof child === 'string') {
-      el.appendChild(document.createTextNode(child));
+    if (typeof child === 'string' || typeof child === 'number') {
+      el.appendChild(document.createTextNode(String(child)));
     } else {
       el.appendChild(child);
     }
