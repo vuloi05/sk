@@ -159,8 +159,14 @@ body {
   flex-direction: column;
 }
 
+.app-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 @media (min-width: 768px) {
-  #app {
+  .app-body {
     flex-direction: row;
   }
 }

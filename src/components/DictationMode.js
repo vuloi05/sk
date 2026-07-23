@@ -8,6 +8,7 @@ import { audioManager } from '../core/audioManager.js';
 import { scoreDictation } from '../core/scorer.js';
 import { renderPlayerControls } from './PlayerControls.js';
 import { ROUTES } from '../utils/constants.js';
+import { wrapKanjiChars } from './KanjiPopup.js';
 
 /**
  * Render the dictation practice screen.
@@ -169,15 +170,27 @@ function checkAnswer() {
       h('div', { className: 'diff-display' },
         ...result.diff.map(token => {
           switch (token.type) {
-            case 'correct':
-              return h('span', { className: 'diff-correct' }, token.text + ' ');
+            case 'correct': {
+              const wrapper = wrapKanjiChars(token.text + ' ');
+              wrapper.className = 'diff-correct';
+              return wrapper;
+            }
             case 'wrong':
               return h('span', {},
                 h('span', { className: 'diff-wrong', title: `Bạn gõ: ${token.text}` }, token.text),
-                h('span', { className: 'diff-correct', title: 'Đáp án đúng' }, ` → ${token.expected} `),
+                (() => {
+                  const w = wrapKanjiChars(` → ${token.expected} `);
+                  w.className = 'diff-correct';
+                  w.title = 'Đáp án đúng';
+                  return w;
+                })(),
               );
-            case 'missing':
-              return h('span', { className: 'diff-missing', title: 'Thiếu' }, `[${token.text}] `);
+            case 'missing': {
+              const wrapper = wrapKanjiChars(`[${token.text}] `);
+              wrapper.className = 'diff-missing';
+              wrapper.title = 'Thiếu';
+              return wrapper;
+            }
             case 'extra':
               return h('span', { className: 'diff-extra', title: 'Thừa' }, token.text + ' ');
             default:

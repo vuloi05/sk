@@ -25,9 +25,9 @@ export const LANGUAGES = {
 
 /** Difficulty levels */
 export const LEVELS = {
-  beginner: { code: 'beginner', label: 'Beginner', color: 'green' },
-  intermediate: { code: 'intermediate', label: 'Intermediate', color: 'blue' },
-  advanced: { code: 'advanced', label: 'Advanced', color: 'orange' },
+  beginner: { code: 'beginner', label: 'Cơ bản', color: 'green' },
+  intermediate: { code: 'intermediate', label: 'Trung cấp', color: 'blue' },
+  advanced: { code: 'advanced', label: 'Nâng cao', color: 'purple' },
 };
 
 /** Practice modes */

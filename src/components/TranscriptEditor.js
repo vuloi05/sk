@@ -9,7 +9,8 @@ import { store } from '../core/store.js';
 import { createLesson, isSupabaseConfigured } from '../core/supabase.js';
 import { audioManager } from '../core/audioManager.js';
 import { showToast } from './Toast.js';
-import { ROUTES } from '../utils/constants.js';
+import { ROUTES, LEVELS } from '../utils/constants.js';
+import { getJlptLevel } from '../core/kanjiService.js';
 
 /**
  * Render the transcript editor page.
@@ -52,6 +53,47 @@ export function renderTranscriptEditor() {
           '💡 Kiểm tra và chỉnh sửa nếu AI nhận sai. Click vào câu để sửa nội dung.',
         ),
       ),
+
+      // Kanji Analysis placeholder (async loaded)
+      (() => {
+        const kanjiCard = h('div', { id: 'kanji-analysis-card', style: { display: 'none' } });
+        // Async load kanji analysis
+        const allText = data.sentences.map(s => s.text).join('');
+        if (data.language === 'ja') {
+          getJlptLevel(allText).then(analysis => {
+            if (analysis.totalKanji === 0) return;
+            kanjiCard.style.display = 'block';
+            kanjiCard.className = 'card mb-lg';
+            kanjiCard.style.borderColor = 'var(--color-accent-purple)';
+            kanjiCard.style.backgroundColor = 'rgba(206,130,255,0.05)';
+            
+            const dist = analysis.distribution;
+            const badges = [];
+            if (dist.N5) badges.push(`N5: ${dist.N5}`);
+            if (dist.N4) badges.push(`N4: ${dist.N4}`);
+            if (dist.N3) badges.push(`N3: ${dist.N3}`);
+            if (dist.N2) badges.push(`N2: ${dist.N2}`);
+            if (dist.N1) badges.push(`N1: ${dist.N1}`);
+            if (dist.unknown) badges.push(`Khác: ${dist.unknown}`);
+
+            const suggestedLabel = LEVELS[analysis.suggested]?.label || analysis.suggested;
+            let suggestedColor = LEVELS[analysis.suggested]?.color || 'var(--color-text)';
+            if (suggestedColor === 'green') suggestedColor = 'var(--color-correct)';
+            if (suggestedColor === 'blue') suggestedColor = 'var(--color-accent-blue)';
+            if (suggestedColor === 'purple') suggestedColor = 'var(--color-accent-purple)';
+
+            kanjiCard.innerHTML = `
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <span style="font-size:1.25rem">🌿</span>
+                <strong>Kanji: ${analysis.totalKanji} chữ</strong>
+                <span class="kanji-badge" style="color: ${suggestedColor}; border-color: ${suggestedColor}">Đề xuất: ${suggestedLabel}</span>
+                ${badges.map(b => `<span class="kanji-badge">${b}</span>`).join('')}
+              </div>
+            `;
+          });
+        }
+        return kanjiCard;
+      })(),
 
       // Sentences list
       h('div', { className: 'card transcript-editor', id: 'sentence-list' },

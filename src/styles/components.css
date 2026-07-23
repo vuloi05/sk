@@ -2,12 +2,133 @@
    DictaFlow — Component Styles
    ============================================ */
 
+/* --- Top Header --- */
+.app-header {
+  height: var(--header-height);
+  background-color: var(--color-surface);
+  border-bottom: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 var(--space-xl);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--color-border);
+  object-fit: cover;
+  transition: transform 0.1s;
+}
+.header-avatar.fallback {
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+.header-avatar:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Profile Dropdown --- */
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-sm);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  width: 250px;
+  z-index: 200;
+  animation: scaleIn var(--transition-fast) ease-out;
+}
+
+.dropdown-header {
+  padding: var(--space-md);
+}
+
+.dropdown-name {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+}
+
+.dropdown-email {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--color-border);
+  width: 100%;
+}
+
+.dropdown-menu {
+  padding: var(--space-xs) 0;
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  color: var(--color-text);
+  font-family: inherit;
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.1s;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.dropdown-item-danger {
+  color: var(--color-accent-red);
+}
+
 /* --- Sidebar & Layout --- */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--header-height));
   padding-bottom: 70px; /* for mobile bottom bar */
 }
 
@@ -31,6 +152,7 @@
   justify-content: space-around;
   width: 100%;
   padding: var(--space-sm);
+  height: 100%;
 }
 
 .sidebar-logo {
@@ -57,14 +179,14 @@
   }
 
   .app-sidebar {
-    width: 260px;
-    height: 100vh;
+    width: 220px;
+    height: calc(100vh - var(--header-height));
     border-top: none;
     border-right: 2px solid var(--color-border);
     flex-direction: column;
     justify-content: flex-start;
     position: sticky;
-    top: 0;
+    top: var(--header-height);
     left: auto;
     right: auto;
     bottom: auto;
@@ -76,24 +198,12 @@
     justify-content: flex-start;
     padding: var(--space-xl);
     gap: var(--space-xl);
+    height: 100%;
   }
-  
-  .sidebar-logo {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-extrabold);
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-  
-  .sidebar-logo svg {
-    width: 36px;
-    height: 36px;
-  }
+
   
   .sidebar-nav {
+    flex: 1;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-md);
@@ -105,6 +215,7 @@
     font-size: var(--font-size-sm);
     padding: var(--space-md);
   }
+
 }
 
 /* --- Lesson Library --- */
@@ -1100,4 +1211,117 @@
   gap: var(--space-md);
   justify-content: flex-end;
   margin-top: var(--space-lg);
+}
+
+/* --- Kanji Popup --- */
+.kanji-char {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--color-primary);
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.kanji-char:hover {
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary-dark);
+}
+
+.kanji-popup {
+  width: 260px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+}
+
+.kanji-popup-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-primary-bg);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.kanji-popup-literal {
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-extrabold);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.kanji-popup-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.kanji-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text);
+}
+.kanji-badge.jlpt-4 { background: var(--color-correct-bg); color: #2d7a00; }
+.kanji-badge.jlpt-3 { background: var(--color-accent-blue-bg); color: #0969da; }
+.kanji-badge.jlpt-2 { background: var(--color-missing-bg); color: #9a6700; }
+.kanji-badge.jlpt-1 { background: var(--color-extra-bg); color: #8250df; }
+
+.kanji-popup-readings {
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.kanji-reading-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.kanji-reading-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  background: var(--color-accent-red);
+  color: white;
+  flex-shrink: 0;
+}
+.kanji-reading-label.kun {
+  background: var(--color-accent-blue);
+}
+.kanji-reading-label.viet {
+  background: var(--color-accent-orange);
+}
+
+.kanji-reading-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.kanji-popup-meanings {
+  padding: var(--space-sm) var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.kanji-meaning-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-style: italic;
 }

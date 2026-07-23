@@ -8,6 +8,7 @@ import { ROUTES, MODES } from './utils/constants.js';
 
 // Components
 import { initToast } from './components/Toast.js';
+import { renderHeader } from './components/Header.js';
 import { renderSidebar } from './components/Sidebar.js';
 import { renderLibrary } from './components/LessonLibrary.js';
 import { renderUploader } from './components/AudioUploader.js';
@@ -70,10 +71,17 @@ class App {
     const route = store.get('route');
     this.root.innerHTML = '';
     
-    // Always render sidebar
-    this.root.appendChild(renderSidebar());
+    // Always render Top Header
+    this.root.appendChild(renderHeader());
 
-    // Main Content Wrapper
+    // App Body Wrapper
+    const appBody = document.createElement('div');
+    appBody.className = 'app-body';
+    
+    // Always render sidebar inside appBody
+    appBody.appendChild(renderSidebar());
+
+    // Main Content Wrapper inside appBody
     const mainContent = document.createElement('main');
     mainContent.className = 'main-content';
 
@@ -108,7 +116,8 @@ class App {
 
     if (pageElement) {
       mainContent.appendChild(pageElement);
-      this.root.appendChild(mainContent);
+      appBody.appendChild(mainContent);
+      this.root.appendChild(appBody);
     }
   }
 

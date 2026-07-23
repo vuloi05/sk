@@ -8,6 +8,7 @@ import { initGemini, isGeminiReady, transcribeAudio, transcribeYouTube, enrichSe
 import { showToast } from './Toast.js';
 import { ROUTES, LANGUAGES, LEVELS, MAX_FILE_SIZE, SUPPORTED_AUDIO_TYPES } from '../utils/constants.js';
 import { validateYouTubeUrl, fetchVideoInfo, buildYouTubeUrl, YOUTUBE_MAX_DURATION } from '../utils/youtubeUtils.js';
+import { getJlptLevel } from '../core/kanjiService.js';
 
 /** @type {'upload' | 'youtube'} Current active tab */
 let activeTab = 'upload';
@@ -190,25 +191,15 @@ export function renderUploader() {
           }),
         ),
 
-        // Language + Level
+        // Language
         h('div', { className: 'upload-form-row' },
-          h('div', {},
+          h('div', { style: { flex: 1 } },
             h('label', { className: 'form-label' }, 'Ngôn ngữ *'),
             h('select', {
               className: 'input select',
               id: 'lesson-language',
               innerHTML: Object.values(LANGUAGES)
                 .map(l => `<option value="${l.code}">${l.flag} ${l.label}</option>`)
-                .join(''),
-            }),
-          ),
-          h('div', {},
-            h('label', { className: 'form-label' }, 'Trình độ *'),
-            h('select', {
-              className: 'input select',
-              id: 'lesson-level',
-              innerHTML: Object.values(LEVELS)
-                .map(l => `<option value="${l.code}">${l.label}</option>`)
                 .join(''),
             }),
           ),
@@ -437,7 +428,6 @@ async function handleTranscribe() {
   }
 
   const language = document.getElementById('lesson-language')?.value || 'ja';
-  const level = document.getElementById('lesson-level')?.value || 'beginner';
   const description = document.getElementById('lesson-description')?.value?.trim() || '';
   const tags = document.getElementById('lesson-tags')?.value?.trim() || '';
 
@@ -477,8 +467,18 @@ async function handleTranscribe() {
       sentences = await transcribeAudio(file, language);
     }
 
-    // Step 2: Enrich with gap-fill & MCQ data
-    store.set('loadingMessage', '🧠 Đang tạo bài tập gap-fill & trắc nghiệm...');
+    // Step 2: Auto-detect Level and Enrich with gap-fill & MCQ data
+    store.set('loadingMessage', '🧠 Đang phân tích độ khó & tạo bài tập...');
+    let level = 'beginner';
+    if (language === 'ja' && sentences.length > 0) {
+      const allText = sentences.map(s => s.text || '').join('');
+      const analysis = await getJlptLevel(allText);
+      level = analysis.suggested.toLowerCase();
+    } else if (language === 'en') {
+       // Optional: For English, default to intermediate or use another heuristic later
+       level = 'intermediate';
+    }
+
     const enrichedSentences = await enrichSentences(sentences, language, level);
 
     // Step 3: Store data for TranscriptEditor

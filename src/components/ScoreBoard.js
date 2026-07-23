@@ -5,6 +5,8 @@
 import { h, formatTime } from '../utils/helpers.js';
 import { store } from '../core/store.js';
 import { ROUTES } from '../utils/constants.js';
+import { analyzeText } from '../core/kanjiService.js';
+import { wrapKanjiChars } from './KanjiPopup.js';
 
 /**
  * Render the final score board.
@@ -105,7 +107,98 @@ export function renderScoreBoard() {
             )
           )
         )
-      ) : null
+      ) : null,
+
+      // Kanji Stats (async loaded)
+      (() => {
+        const kanjiSection = h('div', { id: 'kanji-stats-section' });
+        const allExpected = results.map(r => r.expected || '').join('');
+        
+        analyzeText(allExpected).then(kanjiList => {
+          if (kanjiList.length === 0) return;
+
+          // Save to localStorage for accumulation
+          const stored = JSON.parse(localStorage.getItem('dictaflow_kanji_history') || '[]');
+          const existingChars = new Set(stored.map(k => k.literal));
+          for (const k of kanjiList) {
+            if (!existingChars.has(k.literal)) {
+              stored.push({ literal: k.literal, jlpt: k.jlpt, firstSeen: new Date().toISOString() });
+            }
+          }
+          localStorage.setItem('dictaflow_kanji_history', JSON.stringify(stored));
+
+          // Group by JLPT
+          const groups = { easy: [], medium: [], hard: [], unknown: [] };
+          for (const k of kanjiList) {
+            if (k.jlpt === 4 || k.jlpt === 3) groups.easy.push(k);
+            else if (k.jlpt === 2) groups.medium.push(k);
+            else if (k.jlpt === 1) groups.hard.push(k);
+            else groups.unknown.push(k);
+          }
+
+          kanjiSection.className = 'mt-xl animate-slide-up';
+          kanjiSection.appendChild(
+            h('h3', { className: 'mb-md' }, `🌿 Kanji trong bài (${kanjiList.length} chữ)`)
+          );
+
+          const statsCard = h('div', { className: 'card', style: { padding: 'var(--space-md)' } });
+
+          // Distribution bar
+          const total = kanjiList.length;
+          const barItems = [
+            { count: groups.easy.length, color: 'var(--color-correct)', label: 'N5/N4' },
+            { count: groups.medium.length, color: 'var(--color-accent-orange)', label: 'N3/N2' },
+            { count: groups.hard.length, color: 'var(--color-accent-purple)', label: 'N1' },
+            { count: groups.unknown.length, color: 'var(--color-text-muted)', label: 'Khác' },
+          ].filter(b => b.count > 0);
+
+          const bar = h('div', { 
+            style: { display: 'flex', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px', border: '1.5px solid var(--color-border)' } 
+          });
+          for (const item of barItems) {
+            bar.appendChild(h('div', { 
+              style: { width: `${(item.count / total) * 100}%`, background: item.color },
+              title: `${item.label}: ${item.count}`
+            }));
+          }
+          statsCard.appendChild(bar);
+
+          // Legend
+          const legend = h('div', { className: 'flex gap-md flex-wrap mb-md', style: { fontSize: 'var(--font-size-xs)' } });
+          for (const item of barItems) {
+            legend.appendChild(h('span', { className: 'flex items-center gap-xs' },
+              h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: item.color, display: 'inline-block' } }),
+              `${item.label}: ${item.count}`
+            ));
+          }
+          statsCard.appendChild(legend);
+
+          // Kanji grid (clickable for popup)
+          const grid = h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } });
+          for (const k of kanjiList) {
+            const charEl = wrapKanjiChars(k.literal);
+            const wrapper = h('span', { 
+              className: 'kanji-badge',
+              style: { fontSize: 'var(--font-size-base)', padding: '4px 8px', cursor: 'pointer' }
+            });
+            wrapper.appendChild(charEl);
+            grid.appendChild(wrapper);
+          }
+          statsCard.appendChild(grid);
+
+          // Total accumulated
+          const totalAccumulated = JSON.parse(localStorage.getItem('dictaflow_kanji_history') || '[]').length;
+          statsCard.appendChild(
+            h('div', { className: 'text-sm text-muted mt-md', style: { textAlign: 'center' } },
+              `📚 Tổng Kanji đã học qua tất cả các bài: ${totalAccumulated} chữ`
+            )
+          );
+
+          kanjiSection.appendChild(statsCard);
+        });
+
+        return kanjiSection;
+      })()
 
     )
   );
