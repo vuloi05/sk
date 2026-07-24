@@ -20,6 +20,12 @@ import { renderScoreBoard } from './components/ScoreBoard.js';
 import { renderSettings } from './components/SettingsPanel.js';
 import { renderVocabulary } from './components/Vocabulary.js';
 
+// Import Landing Page
+import { renderLandingPage } from './components/LandingPage.js';
+
+// Import Supabase for eager initialization
+import { getSupabase } from './core/supabase.js';
+
 /**
  * Main application class
  */
@@ -27,15 +33,40 @@ class App {
   constructor() {
     this.root = document.getElementById('app');
     
+    // Eagerly initialize Supabase so it can parse OAuth tokens in the URL hash
+    getSupabase();
+    
     // Subscribe to state changes
     store.subscribe('route', () => this.render());
     store.subscribe('loading', (isLoading) => this.updateLoading(isLoading));
-    store.subscribe('currentUser', () => this.render());
+    store.subscribe('currentUser', (newUser, oldUser) => {
+      const route = store.get('route');
+      
+      // If user logs in while on HOME, redirect to LIBRARY
+      if (newUser && (!route || route === ROUTES.HOME)) {
+        store.set('route', ROUTES.LIBRARY);
+      } 
+      // If user logs out, redirect to HOME
+      else if (!newUser && oldUser) {
+        store.set('route', ROUTES.HOME);
+      } 
+      // Otherwise just re-render
+      else {
+        this.render();
+      }
+    });
     
     // Initial render
     this.initTheme();
     initToast();
-    this.render();
+    
+    // Initial route check
+    if (!store.get('route')) {
+      const user = store.get('currentUser');
+      store.set('route', user ? ROUTES.LIBRARY : ROUTES.HOME);
+    } else {
+      this.render();
+    }
   }
 
   /**
@@ -69,7 +100,20 @@ class App {
    * Main render pipeline based on current route.
    */
   render() {
-    const route = store.get('route');
+    let route = store.get('route');
+    const user = store.get('currentUser');
+    
+    // Fallback if route is empty
+    if (!route) {
+      route = user ? ROUTES.LIBRARY : ROUTES.HOME;
+    }
+
+    // Auth Guard: Redirect to HOME if trying to access protected routes without login
+    if (!user && (route === ROUTES.UPLOAD || route === ROUTES.VOCABULARY)) {
+      setTimeout(() => store.set('route', ROUTES.HOME), 0);
+      return;
+    }
+
     this.root.innerHTML = '';
     
     // Always render Top Header
@@ -79,16 +123,25 @@ class App {
     const appBody = document.createElement('div');
     appBody.className = 'app-body';
     
-    // Always render sidebar inside appBody
-    appBody.appendChild(renderSidebar());
+    // Render sidebar EXCEPT on HOME page
+    if (route !== ROUTES.HOME) {
+      appBody.appendChild(renderSidebar());
+    }
 
     // Main Content Wrapper inside appBody
     const mainContent = document.createElement('main');
     mainContent.className = 'main-content';
+    // If HOME, remove padding/max-width limits by adding a modifier class
+    if (route === ROUTES.HOME) {
+      mainContent.classList.add('is-home');
+    }
 
     // Route logic
     let pageElement;
     switch (route) {
+      case ROUTES.HOME:
+        pageElement = renderLandingPage();
+        break;
       case ROUTES.LIBRARY:
         pageElement = renderLibrary();
         break;
@@ -114,7 +167,7 @@ class App {
         pageElement = renderVocabulary();
         break;
       default:
-        store.set('route', ROUTES.LIBRARY);
+        setTimeout(() => store.set('route', user ? ROUTES.LIBRARY : ROUTES.HOME), 0);
         return;
     }
 

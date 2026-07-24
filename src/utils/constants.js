@@ -8,6 +8,7 @@ export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR
 
 /** App routes */
 export const ROUTES = {
+  HOME: 'home',
   LIBRARY: 'library',
   UPLOAD: 'upload',
   TRANSCRIPT: 'transcript',

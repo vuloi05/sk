@@ -168,9 +168,12 @@ CREATE TABLE IF NOT EXISTS user_kanji_progress (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   kanji TEXT NOT NULL,           -- The kanji literal character (e.g. '漢')
+  state TEXT NOT NULL DEFAULT 'new',  -- 'new', 'learning', 'review', 'relearning'
   ease NUMERIC NOT NULL DEFAULT 2.5,
   interval INTEGER NOT NULL DEFAULT 0,
   reps INTEGER NOT NULL DEFAULT 0,
+  step INTEGER NOT NULL DEFAULT 0,
+  lapses INTEGER NOT NULL DEFAULT 0,
   next_review BIGINT NOT NULL,   -- Unix timestamp in milliseconds
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, kanji)

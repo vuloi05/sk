@@ -11,6 +11,8 @@ import { ROUTES } from '../utils/constants.js';
  * @returns {HTMLElement}
  */
 export function renderSidebar() {
+  const user = store.get('currentUser');
+
   const sidebar = h('aside', { className: 'app-sidebar' },
     h('div', { className: 'sidebar-inner' },
       // Navigation
@@ -20,16 +22,21 @@ export function renderSidebar() {
           onClick: () => store.set('route', ROUTES.LIBRARY),
           id: 'nav-library',
         }, '📚 Thư viện'),
-        h('button', {
-          className: 'btn btn-ghost btn-sm',
-          onClick: () => store.set('route', ROUTES.UPLOAD),
-          id: 'nav-upload',
-        }, '➕ Tạo bài'),
-        h('button', {
-          className: 'btn btn-ghost btn-sm',
-          onClick: () => store.set('route', ROUTES.VOCABULARY),
-          id: 'nav-vocabulary',
-        }, '🧠 Học Kanji (SRS)'),
+        
+        // Auth-gated nav items
+        ...(user ? [
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            onClick: () => store.set('route', ROUTES.UPLOAD),
+            id: 'nav-upload',
+          }, '➕ Tạo bài'),
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            onClick: () => store.set('route', ROUTES.VOCABULARY),
+            id: 'nav-vocabulary',
+          }, '🧠 Học Kanji (SRS)')
+        ] : []),
+
         h('button', {
           className: 'btn btn-ghost btn-sm',
           onClick: () => store.set('route', ROUTES.SETTINGS),

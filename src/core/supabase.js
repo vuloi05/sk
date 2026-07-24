@@ -256,7 +256,7 @@ export async function getCurrentUser() {
 
 /**
  * Fetch all kanji SRS progress for the current user from Supabase.
- * @returns {Promise<Object>} Map of kanji literal -> { ease, interval, reps, nextReview }
+ * @returns {Promise<Object|null>} Map of kanji literal -> SRS card data
  */
 export async function fetchKanjiProgress() {
   const client = getSupabase();
@@ -267,7 +267,7 @@ export async function fetchKanjiProgress() {
 
   const { data, error } = await client
     .from('user_kanji_progress')
-    .select('kanji, ease, interval, reps, next_review')
+    .select('kanji, state, ease, interval, reps, step, lapses, next_review')
     .eq('user_id', user.id);
 
   if (error) {
@@ -279,9 +279,12 @@ export async function fetchKanjiProgress() {
   const progressMap = {};
   for (const row of data) {
     progressMap[row.kanji] = {
+      state: row.state || 'review',
       ease: parseFloat(row.ease),
       interval: row.interval,
       reps: row.reps,
+      step: row.step || 0,
+      lapses: row.lapses || 0,
       nextReview: row.next_review,
     };
   }
@@ -290,9 +293,9 @@ export async function fetchKanjiProgress() {
 
 /**
  * Save a single kanji SRS update to Supabase (upsert).
- * Called in background after each flashcard answer.
+ * Called in background after each flashcard answer — fire-and-forget.
  * @param {string} kanji - The kanji literal
- * @param {Object} srs - { ease, interval, reps, nextReview }
+ * @param {Object} srs - Full card state object
  */
 export async function saveKanjiProgress(kanji, srs) {
   const client = getSupabase();
@@ -306,9 +309,12 @@ export async function saveKanjiProgress(kanji, srs) {
     .upsert({
       user_id: user.id,
       kanji,
+      state: srs.state || 'review',
       ease: srs.ease,
       interval: srs.interval,
       reps: srs.reps,
+      step: srs.step || 0,
+      lapses: srs.lapses || 0,
       next_review: srs.nextReview,
       updated_at: new Date().toISOString(),
     }, {
@@ -323,7 +329,7 @@ export async function saveKanjiProgress(kanji, srs) {
 /**
  * Bulk sync all local SRS data to Supabase. Used on initial load to
  * merge localStorage data with cloud data (cloud wins on conflicts).
- * @param {Object} localSrsData - Map of kanji -> { ease, interval, reps, nextReview }
+ * @param {Object} localSrsData - Map of kanji -> card state
  * @returns {Promise<Object>} Merged SRS data map
  */
 export async function syncKanjiProgress(localSrsData) {
@@ -337,7 +343,7 @@ export async function syncKanjiProgress(localSrsData) {
   const cloudData = await fetchKanjiProgress();
   if (!cloudData) return localSrsData;
 
-  // 2. Merge: cloud wins if both exist (cloud has more recent updated_at)
+  // 2. Merge: cloud wins if both exist
   const merged = { ...localSrsData };
   for (const [kanji, cloudSrs] of Object.entries(cloudData)) {
     const localSrs = merged[kanji];
@@ -353,9 +359,12 @@ export async function syncKanjiProgress(localSrsData) {
       localOnlyEntries.push({
         user_id: user.id,
         kanji,
+        state: srs.state || 'review',
         ease: srs.ease,
         interval: srs.interval,
         reps: srs.reps,
+        step: srs.step || 0,
+        lapses: srs.lapses || 0,
         next_review: srs.nextReview,
         updated_at: new Date().toISOString(),
       });

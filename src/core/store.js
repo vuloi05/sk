@@ -21,8 +21,8 @@ class Store {
       /** @type {Object} User settings */
       settings: safeJsonParse(localStorage.getItem(STORAGE_KEYS.SETTINGS), { ...DEFAULTS }),
 
-      /** @type {string} Current route */
-      route: 'library',
+      /** @type {string|null} Current route */
+      route: null,
 
       /** @type {Object|null} Current lesson being practiced */
       currentLesson: null,
