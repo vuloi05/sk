@@ -158,3 +158,50 @@ ALTER TABLE lessons ADD COLUMN IF NOT EXISTS youtube_url TEXT;
 
 -- Drop NOT NULL constraint on audio_path since YouTube lessons don't have audio files
 ALTER TABLE lessons ALTER COLUMN audio_path DROP NOT NULL;
+
+-- ==========================================
+-- Phase 3: Kanji SRS Progress (Cloud Sync)
+-- ==========================================
+
+-- Store per-user SRS progress for each Kanji character
+CREATE TABLE IF NOT EXISTS user_kanji_progress (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  kanji TEXT NOT NULL,           -- The kanji literal character (e.g. '漢')
+  ease NUMERIC NOT NULL DEFAULT 2.5,
+  interval INTEGER NOT NULL DEFAULT 0,
+  reps INTEGER NOT NULL DEFAULT 0,
+  next_review BIGINT NOT NULL,   -- Unix timestamp in milliseconds
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, kanji)
+);
+
+-- Index for fast lookups by user
+CREATE INDEX IF NOT EXISTS idx_user_kanji_progress_user ON user_kanji_progress(user_id);
+
+-- RLS: Users can only access their own progress
+ALTER TABLE user_kanji_progress ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read own kanji progress" ON user_kanji_progress;
+CREATE POLICY "Users can read own kanji progress"
+  ON user_kanji_progress FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own kanji progress" ON user_kanji_progress;
+CREATE POLICY "Users can insert own kanji progress"
+  ON user_kanji_progress FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own kanji progress" ON user_kanji_progress;
+CREATE POLICY "Users can update own kanji progress"
+  ON user_kanji_progress FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own kanji progress" ON user_kanji_progress;
+CREATE POLICY "Users can delete own kanji progress"
+  ON user_kanji_progress FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);

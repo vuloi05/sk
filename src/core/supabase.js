@@ -251,6 +251,131 @@ export async function getCurrentUser() {
 
 
 /* ============================================
+   Kanji SRS Cloud Sync (Phase 3)
+   ============================================ */
+
+/**
+ * Fetch all kanji SRS progress for the current user from Supabase.
+ * @returns {Promise<Object>} Map of kanji literal -> { ease, interval, reps, nextReview }
+ */
+export async function fetchKanjiProgress() {
+  const client = getSupabase();
+  if (!client) return null;
+
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await client
+    .from('user_kanji_progress')
+    .select('kanji, ease, interval, reps, next_review')
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('[Supabase] fetchKanjiProgress error:', error);
+    return null;
+  }
+
+  // Convert array to map
+  const progressMap = {};
+  for (const row of data) {
+    progressMap[row.kanji] = {
+      ease: parseFloat(row.ease),
+      interval: row.interval,
+      reps: row.reps,
+      nextReview: row.next_review,
+    };
+  }
+  return progressMap;
+}
+
+/**
+ * Save a single kanji SRS update to Supabase (upsert).
+ * Called in background after each flashcard answer.
+ * @param {string} kanji - The kanji literal
+ * @param {Object} srs - { ease, interval, reps, nextReview }
+ */
+export async function saveKanjiProgress(kanji, srs) {
+  const client = getSupabase();
+  if (!client) return;
+
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return;
+
+  const { error } = await client
+    .from('user_kanji_progress')
+    .upsert({
+      user_id: user.id,
+      kanji,
+      ease: srs.ease,
+      interval: srs.interval,
+      reps: srs.reps,
+      next_review: srs.nextReview,
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id,kanji',
+    });
+
+  if (error) {
+    console.error('[Supabase] saveKanjiProgress error:', error);
+  }
+}
+
+/**
+ * Bulk sync all local SRS data to Supabase. Used on initial load to
+ * merge localStorage data with cloud data (cloud wins on conflicts).
+ * @param {Object} localSrsData - Map of kanji -> { ease, interval, reps, nextReview }
+ * @returns {Promise<Object>} Merged SRS data map
+ */
+export async function syncKanjiProgress(localSrsData) {
+  const client = getSupabase();
+  if (!client) return localSrsData;
+
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return localSrsData;
+
+  // 1. Fetch cloud data
+  const cloudData = await fetchKanjiProgress();
+  if (!cloudData) return localSrsData;
+
+  // 2. Merge: cloud wins if both exist (cloud has more recent updated_at)
+  const merged = { ...localSrsData };
+  for (const [kanji, cloudSrs] of Object.entries(cloudData)) {
+    const localSrs = merged[kanji];
+    if (!localSrs || cloudSrs.nextReview >= (localSrs.nextReview || 0)) {
+      merged[kanji] = cloudSrs;
+    }
+  }
+
+  // 3. Upload any local-only entries to cloud
+  const localOnlyEntries = [];
+  for (const [kanji, srs] of Object.entries(merged)) {
+    if (!cloudData[kanji]) {
+      localOnlyEntries.push({
+        user_id: user.id,
+        kanji,
+        ease: srs.ease,
+        interval: srs.interval,
+        reps: srs.reps,
+        next_review: srs.nextReview,
+        updated_at: new Date().toISOString(),
+      });
+    }
+  }
+
+  if (localOnlyEntries.length > 0) {
+    const { error } = await client
+      .from('user_kanji_progress')
+      .upsert(localOnlyEntries, { onConflict: 'user_id,kanji' });
+    if (error) {
+      console.error('[Supabase] bulk sync error:', error);
+    }
+  }
+
+  return merged;
+}
+
+
+/* ============================================
    Demo Data (used when Supabase is not configured)
    ============================================ */
 

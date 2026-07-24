@@ -27,6 +27,11 @@ export function renderSidebar() {
         }, '➕ Tạo bài'),
         h('button', {
           className: 'btn btn-ghost btn-sm',
+          onClick: () => store.set('route', ROUTES.VOCABULARY),
+          id: 'nav-vocabulary',
+        }, '🧠 Học Kanji (SRS)'),
+        h('button', {
+          className: 'btn btn-ghost btn-sm',
           onClick: () => store.set('route', ROUTES.SETTINGS),
           id: 'nav-settings',
         }, '⚙️ Cài đặt')

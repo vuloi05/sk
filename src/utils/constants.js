@@ -15,6 +15,7 @@ export const ROUTES = {
   PRACTICE: 'practice',
   SCORE: 'score',
   SETTINGS: 'settings',
+  VOCABULARY: 'vocabulary',
 };
 
 /** Supported languages */

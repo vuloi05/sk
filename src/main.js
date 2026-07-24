@@ -18,6 +18,7 @@ import { renderGapFill } from './components/GapFillMode.js';
 import { renderMultipleChoice } from './components/MultipleChoice.js';
 import { renderScoreBoard } from './components/ScoreBoard.js';
 import { renderSettings } from './components/SettingsPanel.js';
+import { renderVocabulary } from './components/Vocabulary.js';
 
 /**
  * Main application class
@@ -108,6 +109,9 @@ class App {
         break;
       case ROUTES.SETTINGS:
         pageElement = renderSettings();
+        break;
+      case ROUTES.VOCABULARY:
+        pageElement = renderVocabulary();
         break;
       default:
         store.set('route', ROUTES.LIBRARY);
