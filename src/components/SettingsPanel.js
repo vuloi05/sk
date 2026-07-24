@@ -121,7 +121,19 @@ export function renderSettings() {
         h('div', { className: 'settings-section' },
           h('div', { className: 'settings-section-title' }, 'ℹ️ Về DictaFlow'),
           h('p', { className: 'text-sm text-secondary' },
-            'DictaFlow — Ứng dụng luyện nghe chép chính tả & điền từ cho tiếng Nhật và tiếng Anh. Hoàn toàn miễn phí, mã nguồn mở.',
+            'DictaFlow là dự án tâm huyết được phát triển bởi Vũ Lợi, với mong muốn tạo ra một công cụ học ngoại ngữ (đặc biệt là luyện nghe chép chính tả & Kanji) hoàn toàn miễn phí và hiệu quả cho cộng đồng học thuật.',
+          ),
+          h('p', {
+            className: 'text-sm text-secondary',
+            style: { marginTop: 'var(--space-sm)' },
+          },
+            'Kết nối với tôi tại: ',
+            h('a', { 
+              href: 'https://www.facebook.com/ro.i.90574', 
+              target: '_blank', 
+              rel: 'noopener noreferrer',
+              style: { fontWeight: 'bold' }
+            }, 'Vũ Lợi (Facebook)')
           ),
           h('p', {
             className: 'text-sm text-secondary',

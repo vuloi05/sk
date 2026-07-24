@@ -141,7 +141,9 @@ export function renderLandingPage() {
   const footer = h('section', { className: 'landing-footer' });
   footer.innerHTML = `
     <p>DictaFlow — Nền tảng luyện nghe chép chính tả mã nguồn mở</p>
-    <p style="opacity:0.6;font-size:0.85rem">© ${new Date().getFullYear()} DictaFlow. Built with ❤️ for language learners.</p>
+    <p style="opacity:0.6;font-size:0.85rem">
+      © ${new Date().getFullYear()} DictaFlow. Phát triển bởi <a href="https://www.facebook.com/ro.i.90574" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Vũ Lợi</a>. Built with ❤️ for language learners.
+    </p>
   `;
   page.appendChild(footer);
 
