@@ -4,27 +4,52 @@
 
 import { h } from '../utils/helpers.js';
 import { store } from '../core/store.js';
-import {
-  calculateNextReview,
-  getCardStatus,
-  getButtonPreviews,
-  createNewCard,
-  NEW_CARDS_PER_DAY,
-} from '../core/srsAlgorithm.js';
-import { syncEnglishProgress, saveEnglishProgress } from '../core/supabase.js';
+import { getButtonPreviews, getCardStatus } from '../core/srsAlgorithm.js';
+import { playAudio } from '../core/audioService.js';
+import { englishService } from '../core/englishService.js';
 
 // ─── Module State ───
-let oxfordData = [];
-let srsData = {};
 let currentTab = 'A1';
 let currentMode = 'dashboard'; // 'dashboard' | 'session' | 'grid'
 let sessionQueue = [];
 let sessionIndex = 0;
 let showBack = false;
-let cloudSyncDone = false;
-let sessionStats = { newCount: 0, dueCount: 0, reviewCount: 0 };
-let sessionNewLearned = 0;
+let sessionStats = null;
 let currentDictData = null; // Cache for current word dictionary info
+let isLoaded = false;
+
+function fetchAndTranslateExample(word, page) {
+  englishService.fetchDictionaryDef(word).then(data => {
+    currentDictData = data;
+    renderContent(page);
+    
+    if (data && !data.error && data.meanings) {
+      let exampleEn = null;
+      for (const m of data.meanings) {
+        for (const d of m.definitions) {
+          if (d.example) {
+            exampleEn = d.example;
+            break;
+          }
+        }
+        if (exampleEn) break;
+      }
+      
+      if (exampleEn) {
+        currentDictData.exampleEn = exampleEn;
+        renderContent(page); // render EN immediately
+        
+        const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q=' + encodeURIComponent(exampleEn);
+        fetch(url).then(res => res.json()).then(viData => {
+           if (viData && viData[0] && viData[0][0]) {
+             currentDictData.exampleVi = viData[0][0][0];
+             renderContent(page); // render VI when ready
+           }
+        }).catch(() => {});
+      }
+    }
+  });
+}
 
 const TABS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
@@ -32,39 +57,21 @@ const TABS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export function renderEnglishVocab() {
   const page = h('div', { className: 'page vocabulary-page animate-fade-in' });
 
-  if (oxfordData.length === 0) {
+  if (!isLoaded) {
     page.appendChild(h('div', { className: 'text-center mt-xl' }, 'Đang tải dữ liệu từ vựng...'));
 
-    Promise.all([
-      fetch('/oxford_5000.json').then(res => res.json()),
-      new Promise(resolve => {
-        srsData = JSON.parse(localStorage.getItem('dictaflow_english_srs') || '{}');
-        resolve();
+    englishService.loadData()
+      .then(() => {
+        isLoaded = true;
+        renderContent(page);
       })
-    ]).then(async ([data]) => {
-      oxfordData = data;
-
-      if (!cloudSyncDone) {
-        try {
-          const merged = await syncEnglishProgress(srsData);
-          if (merged) {
-            srsData = merged;
-            localStorage.setItem('dictaflow_english_srs', JSON.stringify(srsData));
-          }
-        } catch (err) {
-          console.warn('[EnglishVocab] Cloud sync failed:', err);
-        }
-        cloudSyncDone = true;
-      }
-
-      renderContent(page);
-    }).catch(err => {
-      console.error('[EnglishVocab] Error fetching data:', err);
-      page.innerHTML = '';
-      page.appendChild(h('div', { style: { color: 'red', padding: '2rem' } }, 
-        'ERROR: ' + err.message + '\n' + err.stack
-      ));
-    });
+      .catch(err => {
+        console.error('[EnglishVocab] Error fetching data:', err);
+        page.innerHTML = '';
+        page.appendChild(h('div', { style: { color: 'red', padding: '2rem' } }, 
+          'ERROR: ' + err.message + '\n' + err.stack
+        ));
+      });
 
     return page;
   }
@@ -129,40 +136,16 @@ function renderDashboard(page) {
   });
   container.appendChild(tabContainer);
 
-  const tabWords = oxfordData.filter(w => w.level === currentTab);
-  const now = Date.now();
-
-  const newCards = [];
-  const learningCards = [];
-  const reviewCards = [];
-
-  for (const w of tabWords) {
-    const card = srsData[w.word];
-    if (!card || card.state === 'new') {
-      newCards.push(w);
-    } else if (card.state === 'learning' || card.state === 'relearning') {
-      if (now >= card.nextReview) learningCards.push(w);
-    } else if (card.state === 'review') {
-      if (now >= card.nextReview) reviewCards.push(w);
-    }
-  }
-
-  sessionStats = {
-    newCount: newCards.length,
-    dueCount: learningCards.length,
-    reviewCount: reviewCards.length,
-  };
-
-  const totalDue = Math.min(newCards.length, NEW_CARDS_PER_DAY) + learningCards.length + reviewCards.length;
+  sessionStats = englishService.getDashboardStats(currentTab);
 
   const statsCard = h('div', { className: 'card mb-lg text-center p-xl' });
   statsCard.appendChild(h('h2', { className: 'mb-sm' }, `Cấp độ ${currentTab}`));
-  statsCard.appendChild(h('p', { className: 'text-secondary mb-lg' }, `Tổng cộng ${tabWords.length} từ vựng`));
+  statsCard.appendChild(h('p', { className: 'text-secondary mb-lg' }, `Tổng cộng ${sessionStats.totalWords} từ vựng`));
 
   const statsFlex = h('div', { className: 'flex justify-center gap-xl mb-lg text-lg flex-wrap' });
-  statsFlex.appendChild(_statItem('Từ mới', Math.min(newCards.length, NEW_CARDS_PER_DAY), '#0969da'));
-  statsFlex.appendChild(_statItem('Đang học', learningCards.length, '#db6d28'));
-  statsFlex.appendChild(_statItem('Cần ôn', reviewCards.length, '#2da44e'));
+  statsFlex.appendChild(_statItem('Từ mới', Math.min(sessionStats.newCards.length, sessionStats.newLimit), '#0969da'));
+  statsFlex.appendChild(_statItem('Đang học', sessionStats.learningAll.length, '#db6d28'));
+  statsFlex.appendChild(_statItem('Cần ôn', sessionStats.reviewDue.length, '#2da44e'));
   statsCard.appendChild(statsFlex);
 
   const btnContainer = h('div', { className: 'flex justify-center gap-md flex-wrap' });
@@ -171,19 +154,17 @@ function renderDashboard(page) {
     'button',
     {
       className: 'btn btn-primary btn-lg',
-      disabled: totalDue === 0,
+      disabled: sessionStats.totalDue === 0,
       onClick: () => {
-        const newSlice = newCards.slice(0, NEW_CARDS_PER_DAY);
-        sessionQueue = [...learningCards, ...reviewCards, ...newSlice].sort(() => Math.random() - 0.5);
+        sessionQueue = englishService.buildSessionQueue(sessionStats);
         sessionIndex = 0;
         showBack = false;
         currentDictData = null;
-        sessionNewLearned = 0;
         currentMode = 'session';
         renderContent(page);
       },
     },
-    totalDue > 0 ? `▶ Bắt đầu học (${totalDue})` : '🎉 Đã hoàn thành mục tiêu hôm nay!'
+    sessionStats.totalDue > 0 ? `▶ Bắt đầu học (${sessionStats.totalDue})` : '🎉 Đã hoàn thành mục tiêu hôm nay!'
   );
   btnContainer.appendChild(startBtn);
 
@@ -240,10 +221,7 @@ function renderSession(page) {
   }
 
   const w = sessionQueue[sessionIndex];
-  if (!srsData[w.word]) {
-    srsData[w.word] = createNewCard();
-  }
-  const cardSrs = srsData[w.word];
+  const cardSrs = englishService.srsData[w.word] || { state: 'new' };
 
   const isNew = cardSrs.state === 'new';
   const isLearning = cardSrs.state === 'learning' || cardSrs.state === 'relearning';
@@ -280,7 +258,7 @@ function renderSession(page) {
     onClick: () => {
       if (!showBack) {
         showBack = true;
-        loadDictionary(w.word).then(() => renderContent(page));
+        fetchAndTranslateExample(w.word, page);
         renderContent(page);
       }
     },
@@ -313,27 +291,34 @@ function renderSession(page) {
     headerRow.appendChild(playBtn);
     backInfo.appendChild(headerRow);
 
+    // Vietnamese Meaning (Immediate)
+    if (w.vi) {
+      backInfo.appendChild(h('div', { className: 'mt-md mb-sm text-lg font-bold text-success' }, w.vi));
+    } else {
+      backInfo.appendChild(h('div', { className: 'mt-md mb-sm text-lg font-bold text-success' }, 'Không có nghĩa tiếng Việt'));
+    }
+
     if (!currentDictData) {
-      backInfo.appendChild(h('div', { className: 'text-secondary text-center my-md' }, 'Đang tra từ điển...'));
+      backInfo.appendChild(h('div', { className: 'text-secondary text-center my-md' }, 'Đang tải phiên âm...'));
     } else if (currentDictData.error) {
-      backInfo.appendChild(h('div', { className: 'text-danger my-md' }, 'Không tìm thấy định nghĩa chi tiết.'));
+      backInfo.appendChild(h('div', { className: 'text-danger my-md' }, 'Không tìm thấy phiên âm.'));
     } else {
       // IPA Phonetic
       if (currentDictData.phonetic) {
-        backInfo.appendChild(h('div', { className: 'text-secondary mb-sm' }, currentDictData.phonetic));
+        backInfo.appendChild(h('div', { className: 'text-secondary mb-sm mt-sm' }, currentDictData.phonetic));
       }
-      
-      // Definitions
-      const meanings = currentDictData.meanings || [];
-      meanings.slice(0, 2).forEach(m => {
-        backInfo.appendChild(h('div', { className: 'mb-sm font-bold text-primary' }, m.partOfSpeech));
-        m.definitions.slice(0, 2).forEach(d => {
-          backInfo.appendChild(h('div', { className: 'mb-xs' }, '• ' + d.definition));
-          if (d.example) {
-            backInfo.appendChild(h('div', { className: 'text-secondary italic ml-md mb-xs', style: { fontSize: '0.9rem' } }, `"${d.example}"`));
-          }
-        });
-      });
+
+      // Example
+      if (currentDictData.exampleEn) {
+        const exBox = h('div', { className: 'mt-md p-md text-left', style: { borderLeft: '3px solid var(--color-primary)', background: 'var(--color-surface)', borderRadius: '4px' } });
+        exBox.appendChild(h('div', { className: 'italic text-primary mb-xs', style: { fontSize: '0.95rem' } }, `"${currentDictData.exampleEn}"`));
+        if (currentDictData.exampleVi) {
+          exBox.appendChild(h('div', { className: 'text-secondary text-sm' }, currentDictData.exampleVi));
+        } else {
+          exBox.appendChild(h('div', { className: 'text-secondary text-sm opacity-50' }, 'Đang dịch ví dụ...'));
+        }
+        backInfo.appendChild(exBox);
+      }
     }
 
     card.appendChild(backInfo);
@@ -353,7 +338,7 @@ function renderSession(page) {
           style: { width: '220px' },
           onClick: () => {
             showBack = true;
-            loadDictionary(w.word).then(() => renderContent(page));
+            fetchAndTranslateExample(w.word, page);
             renderContent(page);
           },
         },
@@ -364,21 +349,7 @@ function renderSession(page) {
     const previews = getButtonPreviews(cardSrs);
 
     const gradeCard = (grade) => {
-      const updatedSrs = calculateNextReview(grade, cardSrs);
-      srsData[w.word] = updatedSrs;
-      localStorage.setItem('dictaflow_english_srs', JSON.stringify(srsData));
-      saveEnglishProgress(w.word, updatedSrs).catch(() => {});
-
-      if (isNew) sessionNewLearned++;
-
-      if (grade === 0) {
-        const insertAt = Math.min(sessionIndex + 5 + Math.floor(Math.random() * 5), sessionQueue.length);
-        sessionQueue.splice(insertAt, 0, w);
-      } else if ((updatedSrs.state === 'learning' || updatedSrs.state === 'relearning') && grade !== 3) {
-        const insertAt = Math.min(sessionIndex + 3 + Math.floor(Math.random() * 3), sessionQueue.length);
-        sessionQueue.splice(insertAt, 0, w);
-      }
-
+      englishService.gradeCard(w.word, grade, cardSrs, sessionQueue, sessionIndex, currentTab);
       sessionIndex++;
       showBack = false;
       currentDictData = null; // reset dict cache
@@ -438,7 +409,7 @@ function renderGrid(page) {
   });
   container.appendChild(tabContainer);
   
-  const tabWords = oxfordData.filter(w => w.level === currentTab);
+  const tabWords = englishService.oxfordData.filter(w => w.level === currentTab);
   const now = Date.now();
 
   const legend = h('div', { className: 'flex gap-md mb-md flex-wrap justify-center', style: { fontSize: '0.85rem' }});
@@ -450,7 +421,7 @@ function renderGrid(page) {
   const grid = h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }});
 
   for (const w of tabWords) {
-    const status = getCardStatus(srsData[w.word], now);
+    const status = getCardStatus(englishService.srsData[w.word], now);
     let bgColor = 'var(--color-surface)';
     let borderColor = 'var(--color-border)';
 
@@ -488,48 +459,4 @@ function _legendItem(bg, border, label) {
     h('div', { style: { width: '16px', height: '16px', background: bg, border: `2px solid ${border}`, borderRadius: '4px' }}),
     h('span', {}, label)
   );
-}
-
-// ─── Dictionary Helpers ───
-async function loadDictionary(word) {
-  if (currentDictData && currentDictData.word === word) return;
-  try {
-    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-    if (!res.ok) {
-      currentDictData = { error: true, word };
-      return;
-    }
-    const data = await res.json();
-    currentDictData = { ...data[0], word };
-  } catch (err) {
-    currentDictData = { error: true, word };
-  }
-}
-
-function playAudio(word, dictData) {
-  // Try to find audio URL from dictionary API
-  let audioUrl = '';
-  if (dictData && dictData.phonetics) {
-    for (const ph of dictData.phonetics) {
-      if (ph.audio) {
-        audioUrl = ph.audio;
-        break;
-      }
-    }
-  }
-
-  if (audioUrl) {
-    const audio = new Audio(audioUrl);
-    audio.play().catch(() => speakFallback(word));
-  } else {
-    speakFallback(word);
-  }
-}
-
-function speakFallback(word) {
-  if ('speechSynthesis' in window) {
-    const utter = new SpeechSynthesisUtterance(word);
-    utter.lang = 'en-US';
-    window.speechSynthesis.speak(utter);
-  }
 }
