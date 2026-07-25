@@ -18,8 +18,22 @@ let sessionStats = null;
 let currentDictData = null; // Cache for current word dictionary info
 let isLoaded = false;
 
-function fetchAndTranslateExample(word, page) {
-  englishService.fetchDictionaryDef(word).then(data => {
+function fetchAndTranslateExample(w, page) {
+  // If static example already exists from our JSON, use it instantly
+  if (w.exampleEn && w.exampleVi) {
+    currentDictData = { phonetic: '...', exampleEn: w.exampleEn, exampleVi: w.exampleVi }; // Dummy phonetic until fetch completes
+    renderContent(page);
+    
+    // Still fetch dictionary for actual phonetic/audio, but keep our static examples
+    englishService.fetchDictionaryDef(w.word).then(data => {
+      currentDictData = { ...data, exampleEn: w.exampleEn, exampleVi: w.exampleVi };
+      renderContent(page);
+    });
+    return;
+  }
+
+  // Fallback to old behavior if no static example
+  englishService.fetchDictionaryDef(w.word).then(data => {
     currentDictData = data;
     renderContent(page);
     
@@ -258,7 +272,7 @@ function renderSession(page) {
     onClick: () => {
       if (!showBack) {
         showBack = true;
-        fetchAndTranslateExample(w.word, page);
+        fetchAndTranslateExample(w, page);
         renderContent(page);
       }
     },
@@ -338,7 +352,7 @@ function renderSession(page) {
           style: { width: '220px' },
           onClick: () => {
             showBack = true;
-            fetchAndTranslateExample(w.word, page);
+            fetchAndTranslateExample(w, page);
             renderContent(page);
           },
         },
