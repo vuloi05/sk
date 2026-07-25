@@ -19,6 +19,7 @@ import { renderMultipleChoice } from './components/MultipleChoice.js';
 import { renderScoreBoard } from './components/ScoreBoard.js';
 import { renderSettings } from './components/SettingsPanel.js';
 import { renderVocabulary } from './components/Vocabulary.js';
+import { renderEnglishVocab } from './components/EnglishVocab.js';
 
 // Import Landing Page
 import { renderLandingPage } from './components/LandingPage.js';
@@ -165,6 +166,17 @@ class App {
         break;
       case ROUTES.VOCABULARY:
         pageElement = renderVocabulary();
+        break;
+      case ROUTES.VOCAB_EN:
+        try {
+          pageElement = renderEnglishVocab();
+        } catch (error) {
+          console.error(error);
+          pageElement = document.createElement('div');
+          pageElement.style.color = 'red';
+          pageElement.style.padding = '2rem';
+          pageElement.innerText = 'ERROR: ' + error.message + '\n' + error.stack;
+        }
         break;
       default:
         setTimeout(() => store.set('route', user ? ROUTES.LIBRARY : ROUTES.HOME), 0);

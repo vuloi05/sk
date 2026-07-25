@@ -501,3 +501,107 @@ function getDemoLesson(lessonId) {
 
   return { lesson, sentences };
 }
+
+/* ============================================
+   English SRS Cloud Sync
+   ============================================ */
+
+/**
+ * Fetch all English SRS progress for the current user from Supabase.
+ * @returns {Promise<Object|null>} Map of english word -> SRS card data
+ */
+export async function fetchEnglishProgress() {
+  const client = getSupabase();
+  if (!client) return null;
+
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await client
+    .from('user_english_progress')
+    .select('word, state, ease, interval, reps, step, lapses, next_review')
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('[Supabase] fetchEnglishProgress error:', error);
+    return null;
+  }
+
+  // Convert array to map
+  const progressMap = {};
+  for (const row of data) {
+    progressMap[row.word] = {
+      state: row.state || 'review',
+      ease: parseFloat(row.ease),
+      interval: row.interval,
+      reps: row.reps,
+      step: row.step || 0,
+      lapses: row.lapses || 0,
+      nextReview: row.next_review,
+    };
+  }
+  return progressMap;
+}
+
+/**
+ * Save a single English SRS update to Supabase (upsert).
+ * Called in background after each flashcard answer — fire-and-forget.
+ * @param {string} word - The English word
+ * @param {Object} srs - Full card state object
+ */
+export async function saveEnglishProgress(word, srs) {
+  const client = getSupabase();
+  if (!client) return;
+
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return;
+
+  const { error } = await client
+    .from('user_english_progress')
+    .upsert({
+      user_id: user.id,
+      word,
+      state: srs.state || 'review',
+      ease: srs.ease,
+      interval: srs.interval,
+      reps: srs.reps,
+      step: srs.step || 0,
+      lapses: srs.lapses || 0,
+      next_review: srs.nextReview,
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id,word',
+    });
+
+  if (error) {
+    console.error('[Supabase] saveEnglishProgress error:', error);
+  }
+}
+
+/**
+ * Bulk sync all local English SRS data to Supabase.
+ * @param {Object} localSrsData - Map of word -> card state
+ * @returns {Promise<Object>} Merged SRS data map
+ */
+export async function syncEnglishProgress(localSrsData) {
+  const client = getSupabase();
+  if (!client) return localSrsData;
+
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return localSrsData;
+
+  // 1. Fetch cloud data
+  const cloudData = await fetchEnglishProgress();
+  if (!cloudData) return localSrsData;
+
+  // 2. Merge: cloud wins if both exist
+  const merged = { ...localSrsData };
+  for (const [word, cloudSrs] of Object.entries(cloudData)) {
+    const localSrs = merged[word];
+    if (!localSrs || cloudSrs.nextReview >= (localSrs.nextReview || 0)) {
+      merged[word] = cloudSrs;
+    }
+  }
+
+  return merged;
+}

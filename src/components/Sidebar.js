@@ -34,7 +34,12 @@ export function renderSidebar() {
             className: 'btn btn-ghost btn-sm',
             onClick: () => store.set('route', ROUTES.VOCABULARY),
             id: 'nav-vocabulary',
-          }, '🧠 Học Kanji (SRS)')
+          }, '🧠 Học Kanji (SRS)'),
+          h('button', {
+            className: 'btn btn-ghost btn-sm',
+            onClick: () => store.set('route', ROUTES.VOCAB_EN),
+            id: 'nav-vocab-en',
+          }, '🔤 Học Tiếng Anh (SRS)')
         ] : []),
 
         h('button', {

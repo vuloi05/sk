@@ -17,6 +17,7 @@ export const ROUTES = {
   SCORE: 'score',
   SETTINGS: 'settings',
   VOCABULARY: 'vocabulary',
+  VOCAB_EN: 'vocab-en',
 };
 
 /** Supported languages */

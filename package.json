@@ -14,6 +14,8 @@
     "@supabase/supabase-js": "^2.49.0"
   },
   "devDependencies": {
+    "pdf-parse": "^1.1.1",
+    "pdf2json": "^4.0.3",
     "vite": "^6.3.0"
   }
 }
