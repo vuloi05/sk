@@ -18,8 +18,9 @@ export function renderLandingPage() {
     <div class="landing-hero-content animate-fade-in">
       <div class="landing-badge">🎧 Nền tảng luyện nghe miễn phí</div>
       <h1 class="landing-title">
-        Luyện nghe tiếng Nhật & Anh<br/>
-        bằng phương pháp <span class="landing-highlight">chép chính tả</span>
+        Luyện nghe Nhật & Anh<br/>
+        bằng phương pháp<br/>
+        <span class="landing-highlight">chép chính tả</span>
       </h1>
       <p class="landing-subtitle">
         Upload audio hoặc dán link YouTube → AI tự tạo bài luyện nghe → 
