@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/vuloi05/sk/main/public/vite.svg" alt="DictaFlow Logo" width="100"/>
   <h1>DictaFlow 🎧</h1>
-  <p><strong>Nền tảng luyện nghe chép chính tả (Dictation) thông minh với sức mạnh của AI Gemini</strong></p>
+  <p><strong>Nền tảng luyện nghe chép chính tả (Dictation) và điền từ hiệu quả</strong></p>
   
   <p>
     <a href="https://github.com/vuloi05/sk/commits/main">
@@ -16,7 +16,7 @@
 ---
 
 ## 🌟 Giới thiệu (Overview)
-**DictaFlow** là một ứng dụng web giúp người học ngoại ngữ (đặc biệt là tiếng Nhật và tiếng Anh) cải thiện kỹ năng nghe hiểu thông qua phương pháp chép chính tả (Dictation). Thay vì chỉ luyện tập thụ động, ứng dụng biến bất kỳ file audio hoặc video YouTube nào thành những bài học tương tác nhờ vào sức mạnh của **Google Gemini AI**.
+**DictaFlow** là một ứng dụng web giúp người học ngoại ngữ (đặc biệt là tiếng Nhật và tiếng Anh) cải thiện kỹ năng nghe hiểu thông qua phương pháp chép chính tả (Dictation). Thay vì chỉ luyện tập thụ động, người dùng có thể thực hành qua các bài nghe do Quản trị viên (Admin) biên soạn cẩn thận với nội dung chất lượng cao.
 
 Ứng dụng được thiết kế theo phong cách **Neobrutalism** (Tân thô mộc): Đường viền đậm, đổ bóng khối vuông vức (block shadows), và màu sắc tương phản cao, mang lại trải nghiệm UX/UI táo bạo và trẻ trung.
 
@@ -24,20 +24,17 @@
 
 ## ✨ Tính năng nổi bật (Key Features)
 
-### 🤖 Tích hợp AI (Google Gemini)
-- **Audio to Transcript:** Tự động nghe và bóc băng file Audio (MP3/WAV) hoặc Video YouTube ra văn bản.
-- **Auto-generation:** Tự động sinh ra các bài tập Trắc nghiệm (MCQ) và Điền từ (Gap-fill) dựa trên nội dung transcript để người dùng luyện tập.
+
 
 ### 🇯🇵 Hỗ trợ tiếng Nhật chuyên sâu
 - **Tích hợp KANJIDIC2:** Phân tích trực tiếp các chữ Kanji xuất hiện trong bài nghe.
 - **Kanji Popup:** Nhấn vào bất kỳ chữ Kanji nào trong lúc kiểm tra đáp án để xem ngay Âm On, Âm Kun, Âm Hán Việt và nghĩa tiếng Anh.
-- **Tự động phân loại JLPT:** AI đếm số lượng và phân bổ Kanji (N5-N1) để tự động đánh giá độ khó của bài học (Cơ bản, Trung cấp, Nâng cao).
 - **Thống kê Kanji:** Theo dõi tổng số lượng Kanji bạn đã học qua tất cả các bài tập.
 
 ### 🎮 Đa dạng chế độ luyện tập
 1. **Chép chính tả (Dictation):** Nghe và gõ lại toàn bộ câu. Hệ thống tự động so sánh, tìm lỗi sai (dư từ, thiếu từ, sai chính tả).
-2. **Điền từ (Gap-fill):** Nghe và điền vào các chỗ trống do AI tạo ra.
-3. **Trắc nghiệm (MCQ):** Trả lời các câu hỏi đọc hiểu về nội dung vừa nghe.
+2. **Điền từ (Gap-fill):** Nghe và điền vào các chỗ trống do hệ thống tạo ngẫu nhiên từ kịch bản có sẵn.
+3. **Trắc nghiệm (MCQ):** Trả lời các câu hỏi đọc hiểu được biên soạn cùng bài nghe.
 
 ### 🌍 Thư viện bài học
 - Được lưu trữ bởi **MongoDB**, người dùng có thể luyện tập các bài nghe từ thư viện chung.
@@ -49,7 +46,6 @@
 - **Frontend:** Vanilla JavaScript (ES6+), HTML5, CSS3 (Custom Design System).
 - **Build Tool:** Vite (Dev Server & Bundling).
 - **Backend/Database:** Node.js, Express, MongoDB (Mongoose).
-- **AI Engine:** Google Gemini Pro API.
 - **Data:** KANJIDIC2 (JSON compiled).
 
 ---
