@@ -4,7 +4,6 @@
 
 import { h } from '../utils/helpers.js';
 import { store } from '../core/store.js';
-import { initGemini, isGeminiReady } from '../core/gemini.js';
 import { showToast } from './Toast.js';
 import { PLAYBACK_SPEEDS, ROUTES } from '../utils/constants.js';
 
@@ -13,58 +12,10 @@ import { PLAYBACK_SPEEDS, ROUTES } from '../utils/constants.js';
  * @returns {HTMLElement}
  */
 export function renderSettings() {
-  const apiKey = store.get('apiKey') || '';
   const settings = store.get('settings') || {};
 
   const page = h('div', { className: 'page' },
-    h('div', { className: 'container', style: { maxWidth: '600px' } },
-      h('h1', { style: { marginBottom: '8px' } }, '⚙️ Cài đặt'),
-      h('p', { className: 'text-secondary mb-lg' }, 'Cấu hình API key và tùy chọn luyện tập.'),
-
-      // API Key Section
-      h('div', { className: 'card', style: { marginBottom: 'var(--space-lg)' } },
-        h('div', { className: 'settings-section' },
-          h('div', { className: 'settings-section-title' }, '🔑 Gemini API Key'),
-          h('p', {
-            className: 'text-sm text-secondary',
-            style: { marginBottom: 'var(--space-md)' },
-            innerHTML: 'Cần API key để upload bài mới. Lấy miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Không cần key để luyện bài có sẵn.',
-          }),
-          h('div', { className: 'api-key-input' },
-            h('input', {
-              className: 'input',
-              type: 'password',
-              id: 'api-key-input',
-              placeholder: 'Dán API key của bạn vào đây...',
-              value: apiKey,
-            }),
-            h('button', {
-              className: 'btn btn-primary btn-sm',
-              id: 'save-api-key',
-              onClick: () => {
-                const input = document.getElementById('api-key-input');
-                const key = input?.value?.trim();
-                if (key) {
-                  store.set('apiKey', key);
-                  initGemini(key);
-                  showToast('API key đã được lưu!', 'success');
-                  updateKeyStatus();
-                } else {
-                  store.set('apiKey', null);
-                  showToast('API key đã bị xóa.', 'info');
-                  updateKeyStatus();
-                }
-              },
-            }, 'Lưu'),
-          ),
-          h('div', {
-            className: `api-key-status ${apiKey ? 'connected' : 'disconnected'}`,
-            id: 'api-key-status',
-          },
-            apiKey ? '🟢 Đã kết nối' : '⚪ Chưa nhập key',
-          ),
-        ),
-      ),
+    h('div', { className: 'container', style: { maxWidth: '600px', paddingTop: '2rem' } },
 
       // Playback Settings
       h('div', { className: 'card', style: { marginBottom: 'var(--space-lg)' } },
@@ -144,19 +95,5 @@ export function renderSettings() {
     ),
   );
 
-  // Init Gemini if key exists
-  if (apiKey) {
-    initGemini(apiKey);
-  }
-
   return page;
-}
-
-function updateKeyStatus() {
-  const el = document.getElementById('api-key-status');
-  const key = store.get('apiKey');
-  if (el) {
-    el.className = `api-key-status ${key ? 'connected' : 'disconnected'}`;
-    el.textContent = key ? '🟢 Đã kết nối' : '⚪ Chưa nhập key';
-  }
 }

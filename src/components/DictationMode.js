@@ -19,6 +19,7 @@ export function renderDictation() {
   const idx = store.get('currentSentenceIndex') || 0;
   const sentence = sentences[idx];
   const settings = store.get('settings') || {};
+  const lesson = store.get('currentLesson') || {};
 
   if (!sentence) {
     store.set('route', ROUTES.SCORE);
@@ -44,6 +45,11 @@ export function renderDictation() {
       h('div', { className: 'progress-bar' },
         h('div', { className: 'progress-bar-fill', style: { width: `${progress}%` } }),
       ),
+
+      // Anime Cinematic Video Player (if YouTube)
+      lesson.source_type === 'youtube' ? 
+        h('div', { className: 'anime-video-player', id: 'yt-visible-container' }) 
+        : null,
 
       // Player
       renderPlayerControls({
@@ -132,7 +138,30 @@ function checkAnswer() {
   // Score
   const result = scoreDictation(sentence.content, userText);
 
-  // Save result
+  // Gửi API lưu tiến độ (Atomic)
+  const currentLesson = store.get('currentLesson');
+  if (currentLesson && store.get('currentUser')) {
+    import('../core/api.js').then(({ saveProgressAPI }) => {
+      // Tìm lỗi sai đầu tiên để gửi (nếu có)
+      let mistake = null;
+      const wrongTokens = result.diff.filter(t => t.type === 'wrong' || t.type === 'missing');
+      if (wrongTokens.length > 0) {
+        mistake = {
+          sentence_id: sentence.id || `s_${idx}`,
+          wrong_word: userText // Lưu lại nguyên câu sai để dễ phân tích
+        };
+      }
+      
+      saveProgressAPI(
+        currentLesson._id,
+        sentence.id || `s_${idx}`,
+        result.score,
+        mistake
+      );
+    });
+  }
+
+  // Save result locally for ScoreBoard
   const results = [...(store.get('practiceResults') || [])];
   results.push({
     sentenceIndex: idx,

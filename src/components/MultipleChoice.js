@@ -19,6 +19,7 @@ export function renderMultipleChoice() {
   const idx = store.get('currentSentenceIndex') || 0;
   const sentence = sentences[idx];
   const settings = store.get('settings') || {};
+  const lesson = store.get('currentLesson') || {};
 
   if (!sentence) {
     store.set('route', ROUTES.SCORE);
@@ -106,6 +107,11 @@ export function renderMultipleChoice() {
       h('div', { className: 'progress-bar' },
         h('div', { className: 'progress-bar-fill', style: { width: `${progress}%` } }),
       ),
+
+      // Anime Cinematic Video Player (if YouTube)
+      lesson && lesson.source_type === 'youtube' ? 
+        h('div', { className: 'anime-video-player', id: 'yt-visible-container' }) 
+        : null,
 
       // Player
       renderPlayerControls({

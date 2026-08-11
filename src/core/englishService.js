@@ -1,4 +1,3 @@
-import { syncEnglishProgress, saveEnglishProgress } from './supabase.js';
 import { calculateNextReview, NEW_CARDS_PER_DAY } from './srsAlgorithm.js';
 
 class EnglishService {
@@ -29,7 +28,8 @@ class EnglishService {
     // Sync with cloud once
     if (!this.cloudSyncDone) {
       try {
-        const merged = await syncEnglishProgress(this.srsData);
+        // const merged = await syncEnglishProgress(this.srsData);
+        const merged = null;
         if (merged) {
           this.srsData = merged;
           localStorage.setItem('dictaflow_english_srs', JSON.stringify(this.srsData));
@@ -103,7 +103,7 @@ class EnglishService {
     
     this.srsData[word] = updatedSrs;
     localStorage.setItem('dictaflow_english_srs', JSON.stringify(this.srsData));
-    saveEnglishProgress(word, updatedSrs).catch(() => {});
+    // saveEnglishProgress(word, updatedSrs).catch(() => {});
 
     if (isNew) {
       const todayKey = new Date().toDateString();

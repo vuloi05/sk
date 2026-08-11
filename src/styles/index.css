@@ -5,52 +5,52 @@
 
 /* --- CSS Custom Properties (Design Tokens) --- */
 :root {
-  /* Primary Palette — Duolingo Green */
-  --color-primary: #58cc02;
-  --color-primary-dark: #46a302;
-  --color-primary-light: #7ed321;
-  --color-primary-bg: #e5f8d0;
+  /* Primary Palette — Anime Red */
+  --color-primary: #e53637;
+  --color-primary-dark: #b82a2b;
+  --color-primary-light: #ff5e5f;
+  --color-primary-bg: rgba(229, 54, 55, 0.1);
 
   /* Accent Colors */
   --color-accent-blue: #1cb0f6;
   --color-accent-blue-dark: #1899d6;
   --color-accent-orange: #ff9600;
   --color-accent-orange-dark: #e08600;
-  --color-accent-red: #ff4b4b;
-  --color-accent-red-dark: #ea2b2b;
+  --color-accent-red: #e53637;
+  --color-accent-red-dark: #b82a2b;
   --color-accent-purple: #ce82ff;
   --color-accent-gold: #ffc800;
 
-  /* Neutrals */
-  --color-bg: #fdfcf0;
-  --color-surface: #ffffff;
-  --color-surface-hover: #f0f0f0;
-  --color-border: #111111;
-  --color-border-strong: #000000;
-  --color-text: #222222;
-  --color-text-secondary: #555555;
+  /* Neutrals - Anime Dark Cinematic */
+  --color-bg: #0b0c2a;
+  --color-surface: #1d1e39;
+  --color-surface-hover: #2b2c4d;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+  --color-text: #ffffff;
+  --color-text-secondary: #b7b7b7;
   --color-text-muted: #888888;
   --color-text-inverse: #ffffff;
 
-  /* Score Colors */
+  /* Score Colors (Keep semantic colors but adapt background) */
   --color-correct: #58cc02;
-  --color-correct-bg: #d7ffb8;
-  --color-wrong: #ff4b4b;
-  --color-wrong-bg: #ffdfe0;
+  --color-correct-bg: rgba(88, 204, 2, 0.15);
+  --color-wrong: #e53637;
+  --color-wrong-bg: rgba(229, 54, 55, 0.15);
   --color-missing: #ff9600;
-  --color-missing-bg: #fff3d6;
+  --color-missing-bg: rgba(255, 150, 0, 0.15);
   --color-extra: #ce82ff;
-  --color-extra-bg: #f3e5ff;
-  --color-overlay: rgba(255, 255, 255, 0.85);
-  --color-accent-blue-bg: #ddf4ff;
+  --color-extra-bg: rgba(206, 130, 255, 0.15);
+  --color-overlay: rgba(11, 12, 42, 0.85);
+  --color-accent-blue-bg: rgba(28, 176, 246, 0.15);
 
-  /* Shadows - Neobrutalism */
-  --shadow-sm: 2px 2px 0px var(--color-border);
-  --shadow-md: 4px 4px 0px var(--color-border);
-  --shadow-lg: 8px 8px 0px var(--color-border);
-  --shadow-button: 4px 4px 0px var(--color-border);
-  --shadow-button-blue: 4px 4px 0px var(--color-border);
-  --shadow-button-orange: 4px 4px 0px var(--color-border);
+  /* Shadows - Modern Clean */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.08);
+  --shadow-button: 0 6px 20px rgba(82, 95, 225, 0.25);
+  --shadow-button-blue: 0 6px 20px rgba(82, 95, 225, 0.25);
+  --shadow-button-orange: 0 6px 20px rgba(255, 150, 0, 0.25);
 
   /* Spacing */
   --space-xs: 4px;
@@ -62,7 +62,8 @@
   --space-3xl: 64px;
 
   /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: 'Mulish', sans-serif;
+  --font-heading: 'Oswald', sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -100,29 +101,7 @@
   --header-height: 64px;
 }
 
-/* --- Dark Mode Palette --- */
-[data-theme="dark"] {
-  /* Neutrals */
-  --color-bg: #1c1c1c;
-  --color-surface: #2d2d2d;
-  --color-surface-hover: #3d3d3d;
-  --color-border: #111111;
-  --color-border-strong: #000000;
-  --color-text: #f0f0f0;
-  --color-text-secondary: #aaaaaa;
-  --color-text-muted: #777777;
-  
-  --grid-color: rgba(255, 255, 255, 0.03);
-  
-  /* Primary & Accents adjustment for better contrast */
-  --color-primary-bg: #223f18;
-  --color-correct-bg: #223f18;
-  --color-wrong-bg: #4a1c1e;
-  --color-missing-bg: #4d3000;
-  --color-extra-bg: #3c2452;
-  --color-overlay: rgba(19, 31, 36, 0.85);
-  --color-accent-blue-bg: #0d3855;
-}
+
 
 /* --- CSS Reset & Base --- */
 *,
@@ -146,10 +125,6 @@ body {
   line-height: var(--line-height-base);
   color: var(--color-text);
   background-color: var(--color-bg);
-  background-image: 
-    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-  background-size: 40px 40px;
   min-height: 100vh;
 }
 
@@ -173,6 +148,7 @@ body {
 
 /* --- Typography --- */
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
   color: var(--color-text);
@@ -440,14 +416,9 @@ textarea.input {
 
 @media (min-width: 768px) {
   .page {
-    background-color: var(--color-surface);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-2xl);
-    max-width: 1200px;
-    margin: 0 auto;
-    min-height: calc(100vh - (var(--space-xl) * 2));
+    padding: 0;
+    max-width: 100%;
+    margin: 0;
   }
 }
 

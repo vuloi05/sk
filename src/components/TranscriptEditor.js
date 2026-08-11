@@ -6,7 +6,7 @@
 
 import { h, formatTime } from '../utils/helpers.js';
 import { store } from '../core/store.js';
-import { createLesson, isSupabaseConfigured } from '../core/supabase.js';
+
 import { audioManager } from '../core/audioManager.js';
 import { showToast } from './Toast.js';
 import { ROUTES, LEVELS } from '../utils/constants.js';
@@ -125,19 +125,10 @@ export function renderTranscriptEditor() {
           className: 'btn btn-blue btn-lg',
           onClick: () => practiceLocally(data),
         }, '▶️ Luyện ngay'),
-
-        // Share to community
-        isSupabaseConfigured()
-          ? h('button', {
-              className: 'btn btn-primary btn-lg',
-              id: 'share-btn',
-              onClick: () => shareToLibrary(data),
-            }, '🌍 Chia sẻ cho cộng đồng')
-          : null,
       ),
 
       h('p', { className: 'text-center text-sm text-muted mt-md' },
-        'Luyện ngay = chỉ luyện trên máy bạn. Chia sẻ = lưu vào thư viện cộng đồng.',
+        'Luyện ngay = chỉ luyện trên máy bạn.',
       ),
     ),
   );
@@ -146,7 +137,7 @@ export function renderTranscriptEditor() {
 }
 
 /**
- * Start practice with current transcript data (local only, no Supabase).
+ * Start practice with current transcript data (local only).
  * @param {Object} data
  */
 async function practiceLocally(data) {
@@ -191,61 +182,4 @@ async function practiceLocally(data) {
   
   store.hideLoading();
   store.set('route', ROUTES.MODE_SELECT);
-}
-
-/**
- * Share lesson to Supabase community library.
- * Supports both 'upload' (audio file) and 'youtube' source types.
- * @param {Object} data
- */
-async function shareToLibrary(data) {
-  const isYouTube = data.sourceType === 'youtube';
-  const file = store.get('uploadedFile');
-
-  // Only require file for upload source type
-  if (!isYouTube && !file) {
-    showToast('File audio không còn. Vui lòng upload lại.', 'error');
-    return;
-  }
-
-  const btn = document.getElementById('share-btn');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Đang chia sẻ...';
-  }
-
-  try {
-    // Get audio duration
-    let duration = 0;
-    if (data.sentences.length > 0) {
-      const lastSentence = data.sentences[data.sentences.length - 1];
-      duration = lastSentence.endTime || 0;
-    }
-
-    const lesson = await createLesson(
-      {
-        title: data.title,
-        language: data.language,
-        level: data.level,
-        description: data.description,
-        tags: data.tags,
-        duration,
-        sourceType: isYouTube ? 'youtube' : 'upload',
-        youtubeUrl: data.youtubeUrl || null,
-      },
-      data.sentences,
-      isYouTube ? null : file,
-    );
-
-    showToast('🎉 Bài luyện đã được chia sẻ cho cộng đồng!', 'success');
-    store.resetUpload();
-    store.set('route', ROUTES.LIBRARY);
-  } catch (err) {
-    console.error('[Share] Error:', err);
-    showToast(err.message || 'Không thể chia sẻ bài. Vui lòng thử lại.', 'error');
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = '🌍 Chia sẻ cho cộng đồng';
-    }
-  }
 }

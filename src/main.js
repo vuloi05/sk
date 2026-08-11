@@ -9,7 +9,6 @@ import { ROUTES, MODES } from './utils/constants.js';
 // Components
 import { initToast } from './components/Toast.js';
 import { renderHeader } from './components/Header.js';
-import { renderSidebar } from './components/Sidebar.js';
 import { renderLibrary } from './components/LessonLibrary.js';
 import { renderUploader } from './components/AudioUploader.js';
 import { renderTranscriptEditor } from './components/TranscriptEditor.js';
@@ -20,12 +19,10 @@ import { renderScoreBoard } from './components/ScoreBoard.js';
 import { renderSettings } from './components/SettingsPanel.js';
 import { renderVocabulary } from './components/Vocabulary.js';
 import { renderEnglishVocab } from './components/EnglishVocab.js';
+import { renderAdminPanel } from './components/AdminPanel.js';
 
-// Import Landing Page
-import { renderLandingPage } from './components/LandingPage.js';
-
-// Import Supabase for eager initialization
-import { getSupabase } from './core/supabase.js';
+// Import custom API for Auth initialization
+import { initAuth } from './core/api.js';
 
 /**
  * Main application class
@@ -34,67 +31,26 @@ class App {
   constructor() {
     this.root = document.getElementById('app');
     
-    // Eagerly initialize Supabase so it can parse OAuth tokens in the URL hash
-    getSupabase();
+    // Initialize Auth (Load JWT Token & User from LocalStorage)
+    initAuth();
     
     // Subscribe to state changes
     store.subscribe('route', () => this.render());
     store.subscribe('loading', (isLoading) => this.updateLoading(isLoading));
     store.subscribe('currentUser', (newUser, oldUser) => {
-      const route = store.get('route');
-      
-      // If user logs in while on HOME, redirect to LIBRARY
-      if (newUser && (!route || route === ROUTES.HOME)) {
-        store.set('route', ROUTES.LIBRARY);
-      } 
-      // If user logs out, redirect to HOME
-      else if (!newUser && oldUser) {
-        store.set('route', ROUTES.HOME);
-      } 
-      // Otherwise just re-render
-      else {
-        this.render();
-      }
+      // Just re-render on auth change
+      this.render();
     });
     
     // Initial render
-    this.initTheme();
     initToast();
     
     // Initial route check
     if (!store.get('route')) {
-      const user = store.get('currentUser');
-      store.set('route', user ? ROUTES.LIBRARY : ROUTES.HOME);
+      store.set('route', ROUTES.LIBRARY);
     } else {
       this.render();
     }
-  }
-
-  /**
-   * Initialize Light/Dark theme from localStorage or OS preference
-   */
-  initTheme() {
-    let theme = localStorage.getItem('dictaflow_theme');
-    if (!theme) {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    
-    if (theme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-    
-    // Listen for OS theme changes if user hasn't explicitly set a preference
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (!localStorage.getItem('dictaflow_theme')) {
-        if (e.matches) {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-          document.documentElement.removeAttribute('data-theme');
-        }
-      }
-    });
   }
 
   /**
@@ -105,44 +61,42 @@ class App {
     const user = store.get('currentUser');
     
     // Fallback if route is empty
-    if (!route) {
-      route = user ? ROUTES.LIBRARY : ROUTES.HOME;
+    if (!route || route === ROUTES.HOME) {
+      route = ROUTES.LIBRARY;
     }
 
     // Auth Guard: Redirect to HOME if trying to access protected routes without login
-    if (!user && (route === ROUTES.UPLOAD || route === ROUTES.VOCABULARY)) {
+    if (!user && (route === ROUTES.UPLOAD || route === ROUTES.VOCABULARY || route === ROUTES.ADMIN_PANEL)) {
       setTimeout(() => store.set('route', ROUTES.HOME), 0);
+      return;
+    }
+
+    // Role Guard: Redirect normal users trying to access Admin routes
+    if (user && user.role !== 'admin' && (route === ROUTES.UPLOAD || route === ROUTES.TRANSCRIPT || route === ROUTES.ADMIN_PANEL)) {
+      setTimeout(() => store.set('route', ROUTES.LIBRARY), 0);
       return;
     }
 
     this.root.innerHTML = '';
     
-    // Always render Top Header
+    // Render Top Header
     this.root.appendChild(renderHeader());
 
     // App Body Wrapper
     const appBody = document.createElement('div');
     appBody.className = 'app-body';
-    
-    // Render sidebar EXCEPT on HOME page
-    if (route !== ROUTES.HOME) {
-      appBody.appendChild(renderSidebar());
-    }
 
     // Main Content Wrapper inside appBody
     const mainContent = document.createElement('main');
     mainContent.className = 'main-content';
-    // If HOME, remove padding/max-width limits by adding a modifier class
-    if (route === ROUTES.HOME) {
-      mainContent.classList.add('is-home');
+    // If PRACTICE, remove padding/max-width limits by adding a modifier class
+    if (route === ROUTES.PRACTICE) {
+      mainContent.classList.add('is-practice');
     }
 
     // Route logic
     let pageElement;
     switch (route) {
-      case ROUTES.HOME:
-        pageElement = renderLandingPage();
-        break;
       case ROUTES.LIBRARY:
         pageElement = renderLibrary();
         break;
@@ -177,6 +131,9 @@ class App {
           pageElement.style.padding = '2rem';
           pageElement.innerText = 'ERROR: ' + error.message + '\n' + error.stack;
         }
+        break;
+      case ROUTES.ADMIN_PANEL:
+        pageElement = renderAdminPanel();
         break;
       default:
         setTimeout(() => store.set('route', user ? ROUTES.LIBRARY : ROUTES.HOME), 0);

@@ -18,14 +18,14 @@ export function toggleProfileDropdown(parentElement) {
   const user = store.get('currentUser');
   if (!user) return;
 
-  const fullName = user.user_metadata?.full_name || 'Người dùng';
+  const fullName = user.name || 'Người dùng';
   const email = user.email;
 
   const handleLogout = async () => {
     if (activeDropdown) activeDropdown.remove();
     activeDropdown = null;
-    const { signOutUser } = await import('../core/supabase.js');
-    await signOutUser();
+    const { logout } = await import('../core/api.js');
+    logout();
   };
 
   const dropdown = h('div', { className: 'profile-dropdown' },
@@ -35,6 +35,14 @@ export function toggleProfileDropdown(parentElement) {
     ),
     h('div', { className: 'dropdown-divider' }),
     h('div', { className: 'dropdown-menu' },
+      user.role === 'admin' ? h('button', { 
+        className: 'dropdown-item',
+        onClick: () => {
+          if (activeDropdown) activeDropdown.remove();
+          activeDropdown = null;
+          store.set('route', 'admin_panel');
+        }
+      }, '⚙️ Trang Quản Trị') : null,
       h('button', { className: 'dropdown-item' }, '⭐ Nâng cấp Premium'),
       h('button', { className: 'dropdown-item' }, '👥 Giới thiệu bạn bè'),
       h('button', { className: 'dropdown-item' }, '⚙️ Cài đặt'),

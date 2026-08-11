@@ -2,22 +2,19 @@
  * DictaFlow — Constants & Configuration
  */
 
-/** Supabase project credentials (public — safe to expose) */
-export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
-export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
-
 /** App routes */
 export const ROUTES = {
   HOME: 'home',
   LIBRARY: 'library',
-  UPLOAD: 'upload',
-  TRANSCRIPT: 'transcript',
+  UPLOAD: 'upload', // Now admin only
+  TRANSCRIPT: 'transcript', // Now admin only
   MODE_SELECT: 'mode-select',
   PRACTICE: 'practice',
   SCORE: 'score',
   SETTINGS: 'settings',
   VOCABULARY: 'vocabulary',
   VOCAB_EN: 'vocab-en',
+  ADMIN_PANEL: 'admin_panel' // New admin route
 };
 
 /** Supported languages */
@@ -75,7 +72,7 @@ export const STORAGE_KEYS = {
   RECENT_LESSONS: 'dictaflow_recent_lessons',
 };
 
-/** Maximum file size for upload (50 MB — Supabase free tier limit) */
+/** Maximum file size for upload (50 MB) */
 export const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 /** Supported audio MIME types */

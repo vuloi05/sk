@@ -15,48 +15,37 @@ export function renderLessonCard(lesson, onClick) {
   const lang = LANGUAGES[lesson.language] || LANGUAGES.en;
   const level = LEVELS[lesson.level] || LEVELS.beginner;
 
-  const tags = (lesson.tags || '')
-    .split(',')
-    .map(t => t.trim())
-    .filter(Boolean)
-    .slice(0, 3);
+  // Cinematic poster background
+  let bgUrl = '';
+  if (lesson.source_type === 'youtube' && lesson.yt_video_id) {
+    bgUrl = `https://img.youtube.com/vi/${lesson.yt_video_id}/hqdefault.jpg`;
+  } else {
+    // Fallback gradient/color if no image
+    bgUrl = `https://placehold.co/300x450/1d1e39/ffffff?text=${encodeURIComponent(lesson.title.substring(0, 15))}`;
+  }
 
   const card = h('div', {
-    className: 'card card-clickable lesson-card animate-fade-in',
+    className: 'anime-card animate-fade-in',
     onClick: () => onClick(lesson),
     id: `lesson-${lesson.id}`,
   },
-    // Header
-    h('div', { className: 'lesson-card-header' },
-      h('div', { className: 'lesson-card-title' }, lesson.title),
-      h('span', { className: `badge badge-${lesson.language}` }, `${lang.flag} ${lang.code.toUpperCase()}`),
+    h('div', { 
+      className: 'anime-card__pic', 
+      style: { backgroundImage: `url('${bgUrl}')` } 
+    },
+      h('div', { className: 'ep' }, level.label),
+      h('div', { className: 'meta-bottom' },
+        h('div', { className: 'comment' }, `📝 ${lesson.sentence_count} câu`),
+        h('div', { className: 'view' }, `🕒 ${formatTime(lesson.duration_seconds)}`)
+      )
     ),
-
-    // Description
-    lesson.description
-      ? h('p', { className: 'text-sm text-secondary', style: { marginTop: '-4px' } }, lesson.description)
-      : null,
-
-    // Meta
-    h('div', { className: 'lesson-card-meta' },
-      h('span', { className: 'lesson-card-meta-item' },
-        '🕒 ', formatTime(lesson.duration_seconds),
+    h('div', { className: 'anime-card__text' },
+      h('ul', {},
+        h('li', {}, `${lang.flag} ${lang.name}`),
+        lesson.source_type === 'youtube' ? h('li', {}, 'YouTube') : h('li', {}, 'Audio')
       ),
-      h('span', { className: 'lesson-card-meta-item' },
-        '📝 ', `${lesson.sentence_count} câu`,
-      ),
-      h('span', { className: `badge badge-${level.color}` }, level.label),
-      lesson.source_type === 'youtube'
-        ? h('span', { className: 'badge', style: { background: '#FF0000', color: 'white' } }, '▶ YouTube')
-        : null,
-    ),
-
-    // Tags
-    tags.length > 0
-      ? h('div', { className: 'lesson-card-tags' },
-          ...tags.map(tag => h('span', { className: 'badge badge-purple' }, `#${tag}`)),
-        )
-      : null,
+      h('h5', {}, lesson.title)
+    )
   );
 
   return card;

@@ -60,6 +60,11 @@ export function renderGapFill() {
         h('div', { className: 'progress-bar-fill', style: { width: `${progress}%` } }),
       ),
 
+      // Anime Cinematic Video Player (if YouTube)
+      lesson && lesson.source_type === 'youtube' ? 
+        h('div', { className: 'anime-video-player', id: 'yt-visible-container' }) 
+        : null,
+
       // Player
       renderPlayerControls({
         startTime: sentence.start_time,

@@ -39,9 +39,8 @@
 2. **Điền từ (Gap-fill):** Nghe và điền vào các chỗ trống do AI tạo ra.
 3. **Trắc nghiệm (MCQ):** Trả lời các câu hỏi đọc hiểu về nội dung vừa nghe.
 
-### 🌍 Thư viện cộng đồng (Community Library)
-- Được hỗ trợ bởi **Supabase**, người dùng có thể chia sẻ các bài luyện nghe tự tạo lên thư viện chung.
-- Tìm kiếm, lọc bài học theo trình độ, ngôn ngữ và độ dài.
+### 🌍 Thư viện bài học
+- Được lưu trữ bởi **MongoDB**, người dùng có thể luyện tập các bài nghe từ thư viện chung.
 
 ---
 
@@ -49,7 +48,7 @@
 
 - **Frontend:** Vanilla JavaScript (ES6+), HTML5, CSS3 (Custom Design System).
 - **Build Tool:** Vite (Dev Server & Bundling).
-- **Backend/Database:** Supabase (PostgreSQL, Auth, Storage).
+- **Backend/Database:** Node.js, Express, MongoDB (Mongoose).
 - **AI Engine:** Google Gemini Pro API.
 - **Data:** KANJIDIC2 (JSON compiled).
 
@@ -69,13 +68,20 @@
    ```
 
 3. **Cấu hình biến môi trường:**
-   Tạo file `.env` ở thư mục gốc và cung cấp các API key cần thiết:
+   Tạo file `.env` ở thư mục `server/` và `.env` ở thư mục gốc:
+   
+   **Frontend (`.env`)**
    ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_API_URL=http://localhost:5000/api
    ```
-   *(Lưu ý: Bạn cũng có thể thiết lập Gemini API Key trực tiếp trên giao diện Cài đặt của ứng dụng).*
-
+   
+   **Backend (`server/.env`)**
+   ```env
+   PORT=5000
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret
+   GOOGLE_CLIENT_ID=your_google_client_id
+   ```
 4. **Biên dịch Kanji data (nếu cần):**
    ```bash
    npm run parse-kanji

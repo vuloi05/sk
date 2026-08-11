@@ -64,7 +64,7 @@ class AudioManager {
   }
 
   /**
-   * Load audio from a URL (e.g., Supabase storage).
+   * Load audio from a URL (e.g., Backend storage).
    * @param {string} url
    */
   loadUrl(url) {
@@ -92,11 +92,20 @@ class AudioManager {
     // Ensure YouTube IFrame API is loaded
     await this._loadYouTubeAPI();
 
-    // Create a container for the player (hidden, but must be in DOM)
+    // Create a container for the player
     this._ytContainer = document.createElement('div');
     this._ytContainer.id = 'yt-player-container';
-    this._ytContainer.style.cssText = 'position:fixed;bottom:0;right:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1;';
-    document.body.appendChild(this._ytContainer);
+    
+    // Check if the UI provides a visible container for the anime theme
+    const visibleContainer = document.getElementById('yt-visible-container');
+    if (visibleContainer) {
+      this._ytContainer.style.cssText = 'width:100%;height:100%;';
+      visibleContainer.appendChild(this._ytContainer);
+    } else {
+      // Hidden fallback
+      this._ytContainer.style.cssText = 'position:fixed;bottom:0;right:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1;';
+      document.body.appendChild(this._ytContainer);
+    }
 
     const innerDiv = document.createElement('div');
     innerDiv.id = 'yt-player-inner';

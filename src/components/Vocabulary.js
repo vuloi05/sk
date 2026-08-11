@@ -5,7 +5,7 @@
  * - 3 queues (New + Learning + Review) interleaved
  * - Learning steps (1min → 10min → graduate)
  * - Lapse handling
- * - Cloud sync via Supabase
+ * - Cloud sync via Backend API
  */
 
 import { h } from '../utils/helpers.js';
@@ -19,7 +19,7 @@ import {
   createNewCard,
   NEW_CARDS_PER_DAY,
 } from '../core/srsAlgorithm.js';
-import { syncKanjiProgress, saveKanjiProgress } from '../core/supabase.js';
+
 
 // ─── Module State ───
 let kanjiList = [];
@@ -68,11 +68,11 @@ export function renderVocabulary() {
       // Cloud sync (once per session)
       if (!cloudSyncDone) {
         try {
-          const merged = await syncKanjiProgress(srsData);
-          if (merged) {
-            srsData = merged;
-            localStorage.setItem('dictaflow_kanji_srs', JSON.stringify(srsData));
-          }
+          // const merged = await syncKanjiProgress(srsData);
+          // if (merged) {
+          //   srsData = merged;
+          //   localStorage.setItem('dictaflow_kanji_srs', JSON.stringify(srsData));
+          // }
         } catch (err) {
           console.warn('[Vocabulary] Cloud sync failed:', err);
         }
@@ -463,7 +463,7 @@ function renderSession(page) {
       localStorage.setItem('dictaflow_kanji_srs', JSON.stringify(srsData));
 
       // Cloud sync (background, fire-and-forget)
-      saveKanjiProgress(k.literal, updatedSrs).catch(() => {});
+      // saveKanjiProgress(k.literal, updatedSrs).catch(() => {});
 
       // Track new cards
       if (isNew) sessionNewLearned++;

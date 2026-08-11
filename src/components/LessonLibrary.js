@@ -4,7 +4,7 @@
 
 import { h, debounce } from '../utils/helpers.js';
 import { store } from '../core/store.js';
-import { fetchLessons, fetchLesson, getAudioUrl, isSupabaseConfigured } from '../core/supabase.js';
+import { fetchLessonsAPI, fetchLessonByIdAPI } from '../core/api.js';
 import { audioManager } from '../core/audioManager.js';
 import { renderLessonCard } from './LessonCard.js';
 import { showToast } from './Toast.js';
@@ -16,15 +16,11 @@ import { ROUTES, LANGUAGES, LEVELS, MODES } from '../utils/constants.js';
  */
 export function renderLibrary() {
   const page = h('div', { className: 'page' },
+    // Hero Section
+    h('div', { id: 'hero-container' }),
+    
     h('div', { className: 'container' },
-      // Header
-      h('div', { className: 'library-header animate-slide-down' },
-        h('h1', {}, '🎧 Thư viện bài luyện'),
-        h('p', {}, 'Chọn bài từ cộng đồng và bắt đầu luyện nghe ngay — không cần API key!'),
-      ),
 
-      // Filters
-      h('div', { className: 'library-filters', id: 'library-filters' }),
 
       // Lesson grid
       h('div', { className: 'lesson-grid stagger-children', id: 'lesson-grid' },
@@ -42,113 +38,117 @@ export function renderLibrary() {
   return page;
 }
 
-/** Current filter state */
-let currentFilters = { language: null, level: null, search: '' };
 
 /**
- * Render filter chips.
+ * Render the Hero Section with top lessons
  */
-function renderFilters() {
-  const container = document.getElementById('library-filters');
+function renderHeroSection(lessons) {
+  const container = document.getElementById('hero-container');
   if (!container) return;
+  
+  // Pick up to 3 lessons for the hero carousel
+  const heroLessons = lessons.slice(0, 3);
+  
+  const heroHtml = h('section', { className: 'hero' },
+    h('div', { className: 'hero__slider' },
+      ...heroLessons.map((lesson, idx) => {
+        let bgUrl = '';
+        if (lesson.source_type === 'youtube' && lesson.youtube_id) {
+          bgUrl = `https://img.youtube.com/vi/${lesson.youtube_id}/maxresdefault.jpg`;
+        } else {
+          bgUrl = `https://picsum.photos/seed/${lesson._id}/1200/600`;
+        }
+        
+        const lang = LANGUAGES[lesson.language]?.label || 'Khác';
+        
+        const slide = h('div', { 
+          className: `hero__items ${idx === 0 ? 'active' : ''}`, 
+          style: { backgroundImage: `url('${bgUrl}')` } 
+        },
+          h('div', { className: 'hero-overlay' }),
+          h('div', { className: 'container' },
+            h('div', { className: 'row' },
+              h('div', { className: 'hero__text' },
+                h('div', { className: 'label' }, lang),
+                h('h2', {}, lesson.title),
+                h('p', {}, lesson.description || 'Tham gia luyện nghe qua bài học thú vị này để nâng cao trình độ của bạn!'),
+                h('a', { 
+                  href: '#',
+                  onClick: (e) => {
+                    e.preventDefault();
+                    openLessonDetail(lesson);
+                  }
+                }, 
+                  h('span', {}, 'HỌC NGAY'),
+                  h('i', { className: 'fa fa-angle-right' })
+                )
+              )
+            )
+          )
+        );
+        return slide;
+      })
+    )
+  );
+  
   container.innerHTML = '';
-
-  // Search input
-  const searchInput = h('input', {
-    className: 'input',
-    type: 'search',
-    placeholder: '🔍 Tìm bài luyện...',
-    style: { maxWidth: '250px', flexShrink: 0 },
-    value: currentFilters.search,
-    onInput: debounce((e) => {
-      currentFilters.search = e.target.value;
-      loadAndRenderLessons();
-    }, 400),
-  });
-  container.appendChild(searchInput);
-
-  // Divider
-  container.appendChild(h('span', { style: { width: '1px', height: '24px', background: 'var(--color-border)' } }));
-
-  // Language filters
-  const allLangChip = createFilterChip('Tất cả', !currentFilters.language, () => {
-    currentFilters.language = null;
-    renderFilters();
-    loadAndRenderLessons();
-  });
-  container.appendChild(allLangChip);
-
-  for (const lang of Object.values(LANGUAGES)) {
-    const chip = createFilterChip(
-      `${lang.flag} ${lang.label}`,
-      currentFilters.language === lang.code,
-      () => {
-        currentFilters.language = currentFilters.language === lang.code ? null : lang.code;
-        renderFilters();
-        loadAndRenderLessons();
-      },
-    );
-    container.appendChild(chip);
-  }
-
-  // Divider
-  container.appendChild(h('span', { style: { width: '1px', height: '24px', background: 'var(--color-border)' } }));
-
-  // Level filters
-  for (const level of Object.values(LEVELS)) {
-    const chip = createFilterChip(
-      level.label,
-      currentFilters.level === level.code,
-      () => {
-        currentFilters.level = currentFilters.level === level.code ? null : level.code;
-        renderFilters();
-        loadAndRenderLessons();
-      },
-    );
-    container.appendChild(chip);
-  }
-}
-
-function createFilterChip(label, isActive, onClick) {
-  return h('button', {
-    className: `filter-chip ${isActive ? 'active' : ''}`,
-    onClick,
-  }, label);
+  container.appendChild(heroHtml);
 }
 
 /**
- * Load lessons from Supabase and render them.
+ * Load lessons from Backend and render them.
  */
 async function loadAndRenderLessons() {
   const grid = document.getElementById('lesson-grid');
   if (!grid) return;
 
-  // Render filters on first call
-  renderFilters();
 
   try {
-    const lessons = await fetchLessons(currentFilters);
+    const lessons = await fetchLessonsAPI();
 
     grid.innerHTML = '';
 
     if (lessons.length === 0) {
+      const user = store.get('currentUser');
       grid.appendChild(
         h('div', { className: 'lesson-empty' },
           h('div', { className: 'lesson-empty-icon' }, '📭'),
           h('p', { style: { fontSize: 'var(--font-size-lg)', fontWeight: '600' } }, 'Chưa có bài luyện nào'),
-          h('p', { className: 'text-secondary mt-sm' }, 'Hãy là người đầu tiên tạo bài!'),
-          h('button', {
+          h('p', { className: 'text-secondary mt-sm' }, user?.role === 'admin' ? 'Bấm vào Trang Quản Trị để tạo bài mới.' : 'Vui lòng quay lại sau!'),
+          user?.role === 'admin' ? h('button', {
             className: 'btn btn-primary mt-lg',
-            onClick: () => store.set('route', ROUTES.UPLOAD),
-          }, '➕ Tạo bài luyện'),
+            onClick: () => store.set('route', ROUTES.ADMIN_PANEL),
+          }, '⚙️ Trang Quản Trị') : null,
         ),
       );
       return;
     }
 
+    if (lessons.length > 0) {
+      renderHeroSection(lessons);
+    }
+
+    // Group lessons by Language and Level
+    const grouped = {};
     for (const lesson of lessons) {
-      const card = renderLessonCard(lesson, (l) => openLessonDetail(l));
-      grid.appendChild(card);
+      const lang = LANGUAGES[lesson.language] ? LANGUAGES[lesson.language].label : 'Khác';
+      const level = LEVELS[lesson.level] ? LEVELS[lesson.level].label : 'Khác';
+      const key = `${lang} - ${level}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(lesson);
+    }
+
+    // Render each group as a row
+    for (const [groupName, groupLessons] of Object.entries(grouped)) {
+      const rowContainer = h('div', { className: 'anime-category-row' },
+        h('div', { className: 'section-title' },
+          h('h4', {}, groupName)
+        ),
+        h('div', { className: 'anime-carousel' },
+          ...groupLessons.map(lesson => renderLessonCard(lesson, (l) => openLessonDetail(l)))
+        )
+      );
+      grid.appendChild(rowContainer);
     }
   } catch (err) {
     console.error('[Library] Load error:', err);
@@ -167,23 +167,29 @@ async function loadAndRenderLessons() {
  * @param {Object} lesson
  */
 async function openLessonDetail(lesson) {
+  const user = store.get('currentUser');
+  if (!user) {
+    const { renderAuthModal } = await import('./AuthModal.js');
+    const modal = renderAuthModal(() => {
+      modal.remove();
+    });
+    document.body.appendChild(modal);
+    return;
+  }
+
   store.showLoading('Đang tải bài luyện...');
 
   try {
-    const { lesson: lessonData, sentences } = await fetchLesson(lesson.id);
+    const lessonData = await fetchLessonByIdAPI(lesson._id);
+    const sentences = lessonData.transcript;
 
     // Load audio based on source type (Strategy Pattern)
-    if (lessonData.source_type === 'youtube' && lessonData.youtube_url) {
+    if (lessonData.type === 'youtube' && lessonData.youtube_id) {
       // YouTube lesson: extract video ID and load YouTube player
-      const { extractVideoId } = await import('../utils/youtubeUtils.js');
-      const videoId = extractVideoId(lessonData.youtube_url);
-      if (videoId) {
-        await audioManager.loadYouTube(videoId);
-      }
-    } else if (lessonData.audio_path && isSupabaseConfigured()) {
-      // Regular audio lesson: load from Supabase Storage
-      const audioUrl = getAudioUrl(lessonData.audio_path);
-      audioManager.loadUrl(audioUrl);
+      await audioManager.loadYouTube(lessonData.youtube_id);
+    } else if (lessonData.audio_url) {
+      // Regular audio lesson
+      audioManager.loadUrl(lessonData.audio_url);
     }
 
     store.update({

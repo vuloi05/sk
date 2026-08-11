@@ -18,45 +18,47 @@ export function renderHeader() {
         },
         href: '#',
         innerHTML: `
-          <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
-            <defs>
-              <linearGradient id="logo-grad-top" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#58cc02"/>
-                <stop offset="100%" style="stop-color:#46a302"/>
-              </linearGradient>
-            </defs>
-            <rect width="64" height="64" rx="14" fill="url(#logo-grad-top)"/>
-            <text x="32" y="44" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="32" fill="white">D</text>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" fill="#e53637"/>
+            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#e53637" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>DictaFlow</span>
+          <span style="color: #ffffff;">DictaFlow</span>
         `,
       }),
 
-      // Right: Actions (Theme + Auth)
+      // Center: Nav Menu
+      h('nav', { className: 'header-menu' },
+        h('ul', {},
+          h('li', { className: store.get('route') === ROUTES.LIBRARY ? 'active' : '' },
+            h('a', {
+              href: '#',
+              onClick: (e) => { e.preventDefault(); store.set('route', ROUTES.LIBRARY); }
+            }, 'Thư viện')
+          ),
+          h('li', { className: store.get('route') === ROUTES.VOCABULARY ? 'active' : '' },
+            h('a', {
+              href: '#',
+              onClick: (e) => { e.preventDefault(); store.set('route', ROUTES.VOCABULARY); }
+            }, 'Từ vựng')
+          ),
+          h('li', { className: store.get('route') === ROUTES.SETTINGS ? 'active' : '' },
+            h('a', {
+              href: '#',
+              onClick: (e) => { e.preventDefault(); store.set('route', ROUTES.SETTINGS); }
+            }, 'Cài đặt')
+          )
+        )
+      ),
+
+      // Right: Actions (Auth)
       h('div', { className: 'header-actions' },
-        h('button', {
-          className: 'btn btn-ghost btn-icon',
-          id: 'nav-theme',
-          title: 'Đổi giao diện (Sáng/Tối)',
-          onClick: (e) => {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const newTheme = isDark ? 'light' : 'dark';
-            if (newTheme === 'dark') {
-              document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-              document.documentElement.removeAttribute('data-theme');
-            }
-            localStorage.setItem('dictaflow_theme', newTheme);
-            e.currentTarget.innerText = newTheme === 'dark' ? '🌞' : '🌙';
-          }
-        }, document.documentElement.getAttribute('data-theme') === 'dark' ? '🌞' : '🌙'),
         
         // Auth UI
         (() => {
           const user = store.get('currentUser');
           if (user) {
-            const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
-            const fallback = user.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 'U';
+            const avatarUrl = user.avatar;
+            const fallback = user.name?.charAt(0)?.toUpperCase() || 'U';
 
             // Wrapper relative for the dropdown popover
             const authWrap = h('div', { className: 'header-auth-wrap', style: { position: 'relative' } });
@@ -82,7 +84,8 @@ export function renderHeader() {
             return authWrap;
           } else {
             return h('button', {
-              className: 'btn btn-outline btn-sm',
+              className: 'btn btn-sm',
+              style: { background: '#e53637', color: '#fff', border: 'none', fontWeight: '600', padding: '8px 20px', borderRadius: '4px', cursor: 'pointer' },
               onClick: async () => {
                 const { renderAuthModal } = await import('./AuthModal.js');
                 const modal = renderAuthModal(() => {
@@ -90,7 +93,7 @@ export function renderHeader() {
                 });
                 document.body.appendChild(modal);
               }
-            }, 'Đăng nhập');
+            }, 'ĐĂNG NHẬP');
           }
         })()
       )
