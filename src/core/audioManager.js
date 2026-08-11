@@ -150,6 +150,21 @@ class AudioManager {
   }
 
   /**
+   * Attach the hidden YouTube container to a visible DOM element.
+   * Useful when the player is preloaded before the UI is fully rendered.
+   * @param {string} targetContainerId - ID of the target visible container
+   */
+  attachToVisibleContainer(targetContainerId) {
+    if (this._engine !== 'youtube' || !this._ytContainer) return;
+    
+    const target = document.getElementById(targetContainerId);
+    if (target) {
+      this._ytContainer.style.cssText = 'width:100%;height:100%;display:block;';
+      target.appendChild(this._ytContainer);
+    }
+  }
+
+  /**
    * Load the YouTube IFrame API script if not already loaded.
    * @returns {Promise<void>}
    */

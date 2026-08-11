@@ -53,7 +53,7 @@ function renderHeroSection(lessons) {
     h('div', { className: 'hero__slider' },
       ...heroLessons.map((lesson, idx) => {
         let bgUrl = '';
-        if (lesson.source_type === 'youtube' && lesson.youtube_id) {
+        if (lesson.youtube_id) {
           bgUrl = `https://img.youtube.com/vi/${lesson.youtube_id}/maxresdefault.jpg`;
         } else {
           bgUrl = `https://picsum.photos/seed/${lesson._id}/1200/600`;
@@ -184,7 +184,7 @@ async function openLessonDetail(lesson) {
     const sentences = lessonData.transcript;
 
     // Load audio based on source type (Strategy Pattern)
-    if (lessonData.type === 'youtube' && lessonData.youtube_id) {
+    if (lessonData.youtube_id) {
       // YouTube lesson: extract video ID and load YouTube player
       await audioManager.loadYouTube(lessonData.youtube_id);
     } else if (lessonData.audio_url) {

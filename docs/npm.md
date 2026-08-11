@@ -58,4 +58,34 @@ Giải thích chi tiết từng thư viện trong lệnh trên:
 *   **`nodemailer`**: Thư viện chuyên trị việc gửi Email tự động từ Node.js. Vừa được chúng ta cài đặt để phục vụ tính năng gửi mã OTP xác minh tài khoản!
 
 ---
+
+## Lệnh khởi chạy Dự án (Frontend & Backend)
+
+Vì dự án được chia làm 2 phần (Frontend ở thư mục gốc và Backend ở thư mục `server/`), bạn cần chạy **song song 2 Terminal** để toàn bộ hệ thống hoạt động.
+
+### 1. Chạy Frontend (Giao diện Web)
+Mở một Terminal tại thư mục gốc của dự án (`c:\sk`):
+```bash
+npm run dev
+```
+*Lệnh này sẽ khởi động Vite Server. Sau đó bạn có thể mở trình duyệt và truy cập vào đường link hiển thị trên Terminal (thường là `http://localhost:5173` hoặc `http://localhost:3000`).*
+
+### 2. Chạy Backend (Máy chủ API & Database)
+Mở một Terminal thứ 2, di chuyển vào thư mục `server/`:
+```bash
+cd server
+```
+Sau đó, bạn có thể chạy một trong hai lệnh sau:
+*   **Chạy môi trường phát triển (có tự động khởi động lại khi sửa code):**
+    ```bash
+    npm run dev
+    ```
+    *(Yêu cầu đã cài đặt `nodemon` qua lệnh `npm install -g nodemon` hoặc `npm i -D nodemon`)*
+*   **Chạy môi trường bình thường (không tự khởi động lại):**
+    ```bash
+    npm start
+    ```
+*Lệnh này sẽ khởi động Node.js server tại `http://localhost:5000` và kết nối với MongoDB.*
+
+---
 *Văn bản này được tự động tạo và tổng hợp dựa trên lịch sử cấu trúc dự án. Bạn có thể sử dụng file này như một tài liệu bàn giao (handover document).*

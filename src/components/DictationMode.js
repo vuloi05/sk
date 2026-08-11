@@ -30,80 +30,87 @@ export function renderDictation() {
   const progress = ((idx) / total) * 100;
 
   const page = h('div', { className: 'page' },
-    h('div', { className: 'practice-container animate-fade-in' },
-      // Progress
-      h('div', { className: 'practice-header' },
-        h('span', { className: 'practice-progress-text' }, `Câu ${idx + 1} / ${total}`),
+    h('div', { className: 'practice-layout animate-fade-in' },
+      
+      // Header (Spans both columns)
+      h('div', { className: 'practice-header', style: { gridColumn: '1 / -1', justifyContent: 'flex-start', gap: '16px', marginBottom: '0' } },
         h('button', {
           className: 'btn btn-ghost btn-sm',
           onClick: () => {
             audioManager.pause();
             store.set('route', ROUTES.MODE_SELECT);
           },
-        }, '✕ Thoát'),
-      ),
-      h('div', { className: 'progress-bar' },
-        h('div', { className: 'progress-bar-fill', style: { width: `${progress}%` } }),
+        }, '⬅ Thoát'),
+        h('span', { className: 'practice-progress-text' }, `Câu ${idx + 1} / ${total}`),
       ),
 
-      // Anime Cinematic Video Player (if YouTube)
-      lesson.source_type === 'youtube' ? 
-        h('div', { className: 'anime-video-player', id: 'yt-visible-container' }) 
-        : null,
+      // Left Panel (Video)
+      h('div', { className: 'practice-left-panel' },
+        // Anime Cinematic Video Player (if YouTube)
+        lesson.youtube_id ? 
+          h('div', { className: 'anime-video-player', id: 'yt-visible-container', style: { marginBottom: 0 } }) 
+          : null,
+      ),
 
-      // Player
-      renderPlayerControls({
-        startTime: sentence.start_time,
-        endTime: sentence.end_time,
-        repeatCount: (settings.repeatCount || 1) - 1,
-      }),
-
-      // Instruction
-      h('div', { className: 'practice-sentence-box' },
-        h('div', { className: 'practice-instruction' }, '✍️ Nghe và chép lại câu bạn nghe được'),
-        h('textarea', {
-          className: 'dictation-textarea',
-          id: 'dictation-input',
-          placeholder: 'Gõ câu bạn nghe được ở đây...',
-          rows: 3,
-          onKeydown: (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              checkAnswer();
-            }
-          },
+      // Right Panel (Controls & Practice Area)
+      h('div', { className: 'practice-right-panel' },
+        // Player
+        renderPlayerControls({
+          startTime: sentence.start,
+          endTime: sentence.end,
+          repeatCount: (settings.repeatCount || 1) - 1,
         }),
 
-        // Result display
-        h('div', { id: 'dictation-result', style: { display: 'none' } }),
-      ),
+        // Instruction
+        h('div', { className: 'practice-sentence-box' },
+          h('div', { className: 'practice-instruction' }, 'Nghe và chép lại câu bạn nghe được'),
+          h('textarea', {
+            className: 'dictation-textarea',
+            id: 'dictation-input',
+            placeholder: 'Gõ câu bạn nghe được ở đây...',
+            rows: 3,
+            onKeydown: (e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                checkAnswer();
+              }
+            },
+          }),
 
-      // Actions
-      h('div', { className: 'practice-actions', id: 'dictation-actions' },
-        h('button', {
-          className: 'btn btn-outline',
-          onClick: () => {
-            audioManager.playSentence(
-              sentence.start_time,
-              sentence.end_time,
-              (settings.repeatCount || 1) - 1,
-            );
-          },
-        }, '🔁 Nghe lại'),
-        h('button', {
-          className: 'btn btn-primary btn-lg',
-          id: 'check-btn',
-          onClick: checkAnswer,
-        }, '✅ Kiểm tra'),
+          // Result display
+          h('div', { id: 'dictation-result', style: { display: 'none' } }),
+        ),
+
+        // Actions
+        h('div', { className: 'practice-actions', id: 'dictation-actions' },
+          h('button', {
+            className: 'btn btn-outline',
+            onClick: () => {
+              audioManager.playSentence(
+                sentence.start,
+                sentence.end,
+                (settings.repeatCount || 1) - 1,
+              );
+            },
+          }, '🔁 Nghe lại'),
+          h('button', {
+            className: 'btn btn-primary btn-lg',
+            id: 'check-btn',
+            onClick: checkAnswer,
+          }, '✅ Kiểm tra'),
+        ),
       ),
     ),
   );
 
   // Auto-play sentence on load
   setTimeout(() => {
+    if (lesson.youtube_id) {
+      audioManager.attachToVisibleContainer('yt-visible-container');
+    }
     audioManager.playSentence(
-      sentence.start_time,
-      sentence.end_time,
+      sentence.start,
+      sentence.end,
       (settings.repeatCount || 1) - 1,
     );
   }, 300);
@@ -136,7 +143,7 @@ function checkAnswer() {
   if (!sentence) return;
 
   // Score
-  const result = scoreDictation(sentence.content, userText);
+  const result = scoreDictation(sentence.en, userText);
 
   // Gửi API lưu tiến độ (Atomic)
   const currentLesson = store.get('currentLesson');
@@ -165,7 +172,7 @@ function checkAnswer() {
   const results = [...(store.get('practiceResults') || [])];
   results.push({
     sentenceIndex: idx,
-    expected: sentence.content,
+    expected: sentence.en,
     userInput: userText,
     score: result.score,
     diff: result.diff,
@@ -231,13 +238,19 @@ function checkAnswer() {
       // Legend
       h('div', {
         className: 'flex gap-md mt-md text-sm',
-        style: { justifyContent: 'center', flexWrap: 'wrap' },
+        style: { justifyContent: 'center', flexWrap: 'wrap', gap: '12px' },
       },
-        h('span', {}, '🟢 Đúng'),
-        h('span', {}, '🔴 Sai → Đáp án'),
-        h('span', {}, '🟡 [Thiếu]'),
-        h('span', {}, '🟣 Thừa'),
+        h('span', { className: 'diff-legend-item diff-correct' }, 'Đúng'),
+        h('span', { className: 'diff-legend-item diff-wrong', style: {textDecoration: 'none'} }, 'Sai → Đáp án'),
+        h('span', { className: 'diff-legend-item diff-missing' }, '[Thiếu]'),
+        h('span', { className: 'diff-legend-item diff-extra', style: {textDecoration: 'none'} }, 'Thừa'),
       ),
+
+      // Translation Hint
+      sentence.vi ? h('div', { 
+        className: 'mt-md text-center text-secondary',
+        style: { fontStyle: 'italic' }
+      }, `Dịch nghĩa: ${sentence.vi}`) : null,
     ),
   );
 

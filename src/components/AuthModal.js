@@ -35,7 +35,7 @@ export function renderAuthModal(onClose) {
     if (!btnWrapper || !window.google) return;
 
     window.google.accounts.id.initialize({
-      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with real ID later
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
       callback: async (response) => {
         try {
           isLoading = true; updateDOM();

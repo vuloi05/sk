@@ -43,6 +43,7 @@ const parseVttToTranscript = (vttData) => {
            }
            currentSentence = null;
         }
+
       }
     }
   }
@@ -53,36 +54,54 @@ exports.fetchYoutubeMetadataAndTranscript = async (url) => {
   const output = await youtubedl(url, {
     dumpSingleJson: true,
     noWarnings: true,
-    preferFreeFormats: true
+    preferFreeFormats: true,
+    writeSub: true,
+    writeAutoSub: true
   });
 
-  if (!output.subtitles) {
-    throw new Error('Video không có phụ đề gốc (Manual CC). Vui lòng chọn video khác.');
+  let transcript = [];
+  let targetSubs = null;
+
+  if (output.subtitles) {
+    const keys = Object.keys(output.subtitles);
+    const validKey = keys.find(k => k.startsWith('ja') || k.startsWith('en'));
+    if (validKey) targetSubs = output.subtitles[validKey];
   }
 
-  // Tìm phụ đề Tiếng Anh chuẩn (ưu tiên en, en-GB, en-US)
-  let enSubs = output.subtitles['en'] || output.subtitles['en-GB'] || output.subtitles['en-US'];
-  if (!enSubs) {
-    throw new Error('Video này không có phụ đề gốc Tiếng Anh.');
+  if (!targetSubs && output.automatic_captions) {
+    const keys = Object.keys(output.automatic_captions);
+    const validKey = keys.find(k => k.startsWith('ja') || k.startsWith('en'));
+    if (validKey) targetSubs = output.automatic_captions[validKey];
   }
 
-  // Ưu tiên file VTT
-  const vttSub = enSubs.find(sub => sub.ext === 'vtt');
-  if (!vttSub) {
-    throw new Error('Không tìm thấy định dạng VTT.');
+  if (targetSubs) {
+    const vttSub = targetSubs.find(sub => sub.ext === 'vtt');
+    if (vttSub) {
+      try {
+        const response = await axios.get(vttSub.url);
+        transcript = parseVttToTranscript(response.data);
+      } catch (err) {
+        console.error("Lỗi khi tải VTT:", err);
+      }
+    }
   }
 
-  // Tải file VTT thẳng vào RAM bằng Axios
-  const response = await axios.get(vttSub.url);
-  const vttData = response.data;
-
-  // Bóc tách thành JSON
-  const transcript = parseVttToTranscript(vttData);
+  // Phát hiện ngôn ngữ
+  let detectedLang = 'jp';
+  if (output.subtitles) {
+    const keys = Object.keys(output.subtitles);
+    if (keys.some(k => k.startsWith('en'))) detectedLang = 'en';
+  }
+  if (detectedLang === 'jp' && output.automatic_captions) {
+    const keys = Object.keys(output.automatic_captions);
+    if (keys.some(k => k.startsWith('en'))) detectedLang = 'en';
+  }
 
   return {
     title: output.title,
     youtube_id: output.id,
     thumbnail: output.thumbnail,
+    language: detectedLang,
     transcript
   };
 };

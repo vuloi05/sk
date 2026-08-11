@@ -179,11 +179,7 @@
   width: 100%;
 }
 
-@media (min-width: 768px) {
-  .main-content {
-    /* No padding here, we want full width for hero */
-  }
-}
+
 
 /* --- Hero Section --- */
 .hero {
@@ -439,6 +435,7 @@
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -626,6 +623,7 @@
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -779,8 +777,33 @@
 
 /* --- Practice Modes (Shared) --- */
 .practice-container {
-  max-width: 800px; /* Wider for cinematic video */
+  max-width: 800px;
   margin: 0 auto;
+}
+
+.practice-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+  max-width: 1200px;
+  margin: var(--space-xl) auto;
+}
+
+@media (min-width: 992px) {
+  .practice-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.practice-left-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.practice-right-panel {
+  display: flex;
+  flex-direction: column;
 }
 
 .anime-video-player {
@@ -845,6 +868,7 @@
   font-family: var(--font-family);
   outline: none;
   background: var(--color-bg);
+  color: var(--color-text);
   transition: all var(--transition-fast);
 }
 
@@ -1074,34 +1098,41 @@
 }
 
 .diff-correct {
-  color: var(--color-primary-dark);
-  background-color: var(--color-correct-bg);
-  padding: 2px 4px;
+  color: #fff;
+  background-color: var(--color-correct);
+  padding: 2px 6px;
   border-radius: 4px;
 }
 
 .diff-wrong {
-  color: var(--color-accent-red);
-  background-color: var(--color-wrong-bg);
-  padding: 2px 4px;
+  color: #fff;
+  background-color: var(--color-wrong);
+  padding: 2px 6px;
   border-radius: 4px;
   text-decoration: line-through;
 }
 
 .diff-missing {
-  color: var(--color-accent-orange);
-  background-color: var(--color-missing-bg);
-  padding: 2px 4px;
+  color: #fff;
+  background-color: var(--color-missing);
+  padding: 2px 6px;
   border-radius: 4px;
-  font-style: italic;
 }
 
 .diff-extra {
-  color: #9b4dca;
-  background-color: var(--color-extra-bg);
-  padding: 2px 4px;
+  color: #fff;
+  background-color: var(--color-extra);
+  padding: 2px 6px;
   border-radius: 4px;
   text-decoration: line-through;
+}
+
+.diff-legend-item {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
 }
 
 /* --- Settings Panel --- */

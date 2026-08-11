@@ -34,102 +34,109 @@ export function renderGapFill() {
   let gapData = safeJsonParse(sentence.gap_fill_data, null);
   if (!gapData) {
     gapData = generateLocalGapFill(
-      sentence.content,
+      sentence.en,
       lesson?.language || 'en',
       lesson?.level || 'intermediate',
     );
   }
 
-  const tokens = applyGapFill(sentence.content, gapData);
+  const tokens = applyGapFill(sentence.en, gapData);
   const blanks = tokens.filter(t => t.isBlank);
 
   const page = h('div', { className: 'page' },
-    h('div', { className: 'practice-container animate-fade-in' },
-      // Progress
-      h('div', { className: 'practice-header' },
-        h('span', { className: 'practice-progress-text' }, `Câu ${idx + 1} / ${total}`),
+    h('div', { className: 'practice-layout animate-fade-in' },
+      
+      // Header (Spans both columns)
+      h('div', { className: 'practice-header', style: { gridColumn: '1 / -1', justifyContent: 'flex-start', gap: '16px', marginBottom: '0' } },
         h('button', {
           className: 'btn btn-ghost btn-sm',
           onClick: () => {
             audioManager.pause();
             store.set('route', ROUTES.MODE_SELECT);
           },
-        }, '✕ Thoát'),
-      ),
-      h('div', { className: 'progress-bar' },
-        h('div', { className: 'progress-bar-fill', style: { width: `${progress}%` } }),
+        }, '⬅ Thoát'),
+        h('span', { className: 'practice-progress-text' }, `Câu ${idx + 1} / ${total}`),
       ),
 
-      // Anime Cinematic Video Player (if YouTube)
-      lesson && lesson.source_type === 'youtube' ? 
-        h('div', { className: 'anime-video-player', id: 'yt-visible-container' }) 
-        : null,
+      // Left Panel (Video)
+      h('div', { className: 'practice-left-panel' },
+        // Anime Cinematic Video Player (if YouTube)
+        lesson && lesson.youtube_id ? 
+          h('div', { className: 'anime-video-player', id: 'yt-visible-container', style: { marginBottom: 0 } }) 
+          : null,
+      ),
 
-      // Player
-      renderPlayerControls({
-        startTime: sentence.start_time,
-        endTime: sentence.end_time,
-        repeatCount: (settings.repeatCount || 1) - 1,
-      }),
+      // Right Panel (Controls & Practice Area)
+      h('div', { className: 'practice-right-panel' },
+        // Player
+        renderPlayerControls({
+          startTime: sentence.start,
+          endTime: sentence.end,
+          repeatCount: (settings.repeatCount || 1) - 1,
+        }),
 
-      // Gap-fill sentence
-      h('div', { className: 'practice-sentence-box' },
-        h('div', { className: 'practice-instruction' }, '📝 Nghe và điền từ còn thiếu'),
-        h('div', { className: 'gapfill-sentence', id: 'gapfill-sentence' },
-          ...tokens.map((token, ti) => {
-            if (token.isBlank) {
-              const blankIdx = blanks.indexOf(token);
-              return h('input', {
-                className: 'gapfill-blank',
-                type: 'text',
-                id: `blank-${blankIdx}`,
-                dataset: { answer: token.answer, index: String(blankIdx) },
-                style: { width: `${Math.max(60, token.answer.length * 14 + 20)}px` },
-                onKeydown: (e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    // Focus next blank or check
-                    const nextBlank = document.getElementById(`blank-${blankIdx + 1}`);
-                    if (nextBlank) {
-                      nextBlank.focus();
-                    } else {
-                      checkGapFill(blanks);
+        // Gap-fill sentence
+        h('div', { className: 'practice-sentence-box' },
+          h('div', { className: 'practice-instruction' }, 'Nghe và điền từ còn thiếu'),
+          h('div', { className: 'gapfill-sentence', id: 'gapfill-sentence' },
+            ...tokens.map((token, ti) => {
+              if (token.isBlank) {
+                const blankIdx = blanks.indexOf(token);
+                return h('input', {
+                  className: 'gapfill-blank',
+                  type: 'text',
+                  id: `blank-${blankIdx}`,
+                  dataset: { answer: token.answer, index: String(blankIdx) },
+                  style: { width: `${Math.max(60, token.answer.length * 14 + 20)}px` },
+                  onKeydown: (e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      // Focus next blank or check
+                      const nextBlank = document.getElementById(`blank-${blankIdx + 1}`);
+                      if (nextBlank) {
+                        nextBlank.focus();
+                      } else {
+                        checkGapFill(blanks);
+                      }
                     }
-                  }
-                },
-              });
-            }
-            return h('span', { className: 'gapfill-word' }, token.text + ' ');
-          }),
+                  },
+                });
+              }
+              return h('span', { className: 'gapfill-word' }, token.text + ' ');
+            }),
+          ),
         ),
-      ),
 
-      // Actions
-      h('div', { className: 'practice-actions', id: 'gapfill-actions' },
-        h('button', {
-          className: 'btn btn-outline',
-          onClick: () => {
-            audioManager.playSentence(
-              sentence.start_time,
-              sentence.end_time,
-              (settings.repeatCount || 1) - 1,
-            );
-          },
-        }, '🔁 Nghe lại'),
-        h('button', {
-          className: 'btn btn-primary btn-lg',
-          id: 'gapfill-check-btn',
-          onClick: () => checkGapFill(blanks),
-        }, '✅ Kiểm tra'),
+        // Actions
+        h('div', { className: 'practice-actions', id: 'gapfill-actions' },
+          h('button', {
+            className: 'btn btn-outline',
+            onClick: () => {
+              audioManager.playSentence(
+                sentence.start,
+                sentence.end,
+                (settings.repeatCount || 1) - 1,
+              );
+            },
+          }, '🔁 Nghe lại'),
+          h('button', {
+            className: 'btn btn-primary btn-lg',
+            id: 'gapfill-check-btn',
+            onClick: () => checkGapFill(blanks),
+          }, '✅ Kiểm tra'),
+        ),
       ),
     ),
   );
 
   // Auto-play
   setTimeout(() => {
+    if (lesson && lesson.youtube_id) {
+      audioManager.attachToVisibleContainer('yt-visible-container');
+    }
     audioManager.playSentence(
-      sentence.start_time,
-      sentence.end_time,
+      sentence.start,
+      sentence.end,
       (settings.repeatCount || 1) - 1,
     );
     // Focus first blank
@@ -190,7 +197,7 @@ function checkGapFill(blanks) {
   const results = [...(store.get('practiceResults') || [])];
   results.push({
     sentenceIndex: idx,
-    expected: sentence.content,
+    expected: sentence.en,
     userInput: userInputs.join(', '),
     score,
     correctBlanks: correctCount,

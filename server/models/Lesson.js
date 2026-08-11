@@ -10,10 +10,11 @@ const SentenceSchema = new mongoose.Schema({
 
 const LessonSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  type: { type: String, enum: ['youtube', 'audio'], required: true },
-  youtube_id: { type: String, default: null }, // Null if type is audio
-  audio_url: { type: String, default: null },  // Null if type is youtube
-  level: { type: String, enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Unknown'], default: 'Unknown' },
+  youtube_id: { type: String, required: true }, 
+  language: { type: String, enum: ['jp', 'en'], default: 'jp' },
+  level: { type: String, enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'N5', 'N4', 'N3', 'N2', 'N1', 'Unknown'], default: 'Unknown' },
+  description: { type: String, default: '' },
+  tags: { type: [String], default: [] },
   thumbnail: { type: String, default: '' },
   transcript: [SentenceSchema],
   created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

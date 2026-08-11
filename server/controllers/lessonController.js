@@ -32,42 +32,45 @@ exports.getLessonById = async (req, res) => {
 const { fetchYoutubeMetadataAndTranscript } = require('../utils/youtubeHelper');
 const { calculateLessonLevel } = require('../utils/levelGrader');
 
-// @desc    Tạo bài học mới (Tích hợp yt-dlp và Oxford Lexical Profiling)
+// @desc    Lấy thông tin và phụ đề từ YouTube
+// @route   POST /api/lessons/youtube/fetch
+// @access  Private/Admin
+exports.fetchYoutubeInfo = async (req, res) => {
+  try {
+    const { youtube_url } = req.body;
+    if (!youtube_url) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp link YouTube' });
+    }
+    const ytData = await fetchYoutubeMetadataAndTranscript(youtube_url);
+    res.json(ytData);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Tạo bài học mới
 // @route   POST /api/lessons
 // @access  Private/Admin
 exports.createLesson = async (req, res) => {
   try {
-    const { youtube_url, audio_url, title, type, transcript } = req.body;
+    const { title, youtube_id, language, level, description, tags, thumbnail, transcript } = req.body;
     
-    let finalTitle = title;
-    let finalYoutubeId = null;
-    let finalThumbnail = '';
-    let finalTranscript = transcript || [];
-    let finalLevel = 'Unknown';
-
-    if (type === 'youtube' && youtube_url) {
-      // 1. Kéo dữ liệu bằng yt-dlp
-      const ytData = await fetchYoutubeMetadataAndTranscript(youtube_url);
-      finalTitle = title || ytData.title; // Ưu tiên title truyền vào, nếu không có thì lấy của YouTube
-      finalYoutubeId = ytData.youtube_id;
-      finalThumbnail = ytData.thumbnail;
-      finalTranscript = ytData.transcript;
-    }
-
-    // 2. Chạy thuật toán Oxford để xếp hạng trình độ
-    if (finalTranscript && finalTranscript.length > 0) {
-      finalLevel = calculateLessonLevel(finalTranscript);
+    // Nếu là tiếng Anh và chưa có level, thử tính toán level
+    let finalLevel = level || 'Unknown';
+    if (language === 'en' && finalLevel === 'Unknown' && transcript && transcript.length > 0) {
+      finalLevel = calculateLessonLevel(transcript);
     }
 
     // 3. Lưu vào MongoDB
     const lesson = new Lesson({
-      title: finalTitle || 'Untitle Lesson',
-      type: type || 'youtube',
-      youtube_id: finalYoutubeId,
-      audio_url: audio_url || null,
+      title: title || 'Untitled Lesson',
+      youtube_id: youtube_id,
+      language: language || 'jp',
       level: finalLevel,
-      thumbnail: finalThumbnail,
-      transcript: finalTranscript,
+      description: description || '',
+      tags: tags || [],
+      thumbnail: thumbnail || '',
+      transcript: transcript || [],
       created_by: req.user._id // user is injected by authMiddleware
     });
 

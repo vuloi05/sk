@@ -10,7 +10,7 @@ import { ROUTES, MODES } from './utils/constants.js';
 import { initToast } from './components/Toast.js';
 import { renderHeader } from './components/Header.js';
 import { renderLibrary } from './components/LessonLibrary.js';
-import { renderUploader } from './components/AudioUploader.js';
+import { renderAdminLessonBuilder } from './components/AdminLessonBuilder.js';
 import { renderTranscriptEditor } from './components/TranscriptEditor.js';
 import { renderDictation } from './components/DictationMode.js';
 import { renderGapFill } from './components/GapFillMode.js';
@@ -101,7 +101,7 @@ class App {
         pageElement = renderLibrary();
         break;
       case ROUTES.UPLOAD:
-        pageElement = renderUploader();
+        pageElement = renderAdminLessonBuilder();
         break;
       case ROUTES.TRANSCRIPT:
         pageElement = renderTranscriptEditor();
