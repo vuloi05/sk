@@ -1,91 +1,57 @@
 # Tổng hợp Lệnh NPM sử dụng trong dự án DictaFlow
 
-Dự án DictaFlow được chia thành 2 phần tách biệt: **Frontend** (giao diện web sử dụng Vite/Vanilla JS) và **Backend** (máy chủ xử lý API sử dụng Node.js/Express). Dưới đây là toàn bộ các lệnh `npm` đã được sử dụng từ lúc khởi tạo dự án cho đến nay.
+Dự án DictaFlow được thiết kế theo mô hình **Monorepo**, chia thành 2 không gian làm việc (Workspaces) tách biệt: **Frontend** (giao diện web sử dụng Vite/Vanilla JS trong thư mục `client/`) và **Backend** (máy chủ xử lý API sử dụng Node.js/Express trong thư mục `server/`). Cả hai được điều phối chung bởi một file `package.json` ở thư mục gốc.
+
+Dưới đây là toàn bộ các lệnh `npm` được sử dụng trong hệ thống:
 
 ---
 
-## 1. Môi trường Frontend (Thư mục gốc: `c:\sk`)
+## 1. Lệnh khởi chạy Dự án Tự động (Mới)
+
+Vì dự án đã được chuyển sang kiến trúc Monorepo Workspace, bạn **KHÔNG CẦN** phải mở 2 terminal để chạy riêng biệt như trước đây. Mọi thứ đã được tự động hóa.
+
+Mở một Terminal duy nhất tại thư mục gốc của dự án (`c:\sk`):
+```bash
+npm run dev
+```
+*Ý nghĩa:* Lệnh này sẽ sử dụng thư viện `concurrently` để chạy ngầm 2 lệnh `npm run dev --workspace=server` và `npm run dev --workspace=client` cùng một lúc. Máy chủ Backend (Port 5000) và Frontend (Port 3000) sẽ tự động được khởi động song song trong cùng một màn hình terminal.
+
+---
+
+## 2. Môi trường Frontend (Thư mục: `c:\sk\client`)
 
 Khu vực này chứa mã nguồn giao diện người dùng, được build bằng công cụ siêu tốc **Vite**.
-
-### Khởi tạo và chạy dự án cơ bản
-*   **`npm create vite@latest .`**
-    *   *Ý nghĩa:* Khởi tạo một dự án Vite mới tinh ngay tại thư mục hiện tại (`.`). Lệnh này tạo ra cấu trúc thư mục, file `index.html`, `main.js`, và `package.json` cơ bản.
-*   **`npm install`** (hoặc `npm i`)
-    *   *Ý nghĩa:* Cài đặt toàn bộ các thư viện (dependencies) được khai báo trong file `package.json` vào thư mục `node_modules`. Lệnh này thường chạy ngay sau khi clone source code về hoặc khởi tạo dự án.
-*   **`npm run dev`**
-    *   *Ý nghĩa:* Khởi động máy chủ phát triển cục bộ (Local Development Server) của Vite. Lệnh này giúp bạn xem trực tiếp giao diện web trên trình duyệt (thường ở cổng `localhost:5173` hoặc `localhost:3000`) và tự động tải lại trang (Hot Reload) mỗi khi bạn lưu file code.
 
 ### Cài đặt các thư viện bổ sung (Dependencies)
 Đây là các thư viện được tải về để phục vụ các tính năng cụ thể của Frontend:
 
-*   **`npm install axios`**
-    *   *Ý nghĩa:* Cài đặt thư viện `axios`, dùng để gửi các HTTP Request (GET, POST, PUT, DELETE...) từ Frontend lên Backend (ví dụ: gọi API Đăng nhập, API lấy bài học).
-*   **`npm install @google/generative-ai`**
-    *   *Ý nghĩa:* Cài đặt SDK của Google Gemini AI. *(Lưu ý: Thư viện này từng được dùng để gọi AI chấm điểm, hiện tại dự án không còn dùng AI nữa nên có thể gỡ bỏ nếu muốn bằng lệnh `npm uninstall @google/generative-ai`)*.
-*   **`npm install google-translate-api-x`**
+*   **`npm install axios --workspace=client`**
+    *   *Ý nghĩa:* Cài đặt thư viện `axios` vào frontend, dùng để gửi các HTTP Request (GET, POST, PUT, DELETE...) từ Frontend lên Backend.
+*   **`npm install google-translate-api-x --workspace=client`**
     *   *Ý nghĩa:* Thư viện hỗ trợ dịch thuật tự động (dùng cho tính năng dịch từ vựng tiếng Nhật/Anh sang tiếng Việt).
-*   **`npm install -D pdf-parse pdf2json`**
-    *   *Ý nghĩa:* Cài đặt các công cụ giúp đọc và trích xuất dữ liệu chữ từ file PDF (dành cho tính năng Tải lên file kịch bản PDF). Hậu tố `-D` nghĩa là cài đặt vào `devDependencies` (chỉ dùng trong quá trình code, không gói vào bản build chính thức).
+*   **`npm install -D pdf-parse pdf2json --workspace=client`**
+    *   *Ý nghĩa:* Cài đặt các công cụ giúp đọc và trích xuất dữ liệu chữ từ file PDF. Hậu tố `-D` nghĩa là cài đặt vào `devDependencies` (chỉ dùng trong quá trình code, không gói vào bản build chính thức).
 
 ---
 
-## 2. Môi trường Backend (Thư mục: `c:\sk\server`)
+## 3. Môi trường Backend (Thư mục: `c:\sk\server`)
 
-Khu vực này chứa máy chủ Node.js kết nối với cơ sở dữ liệu MongoDB và xử lý logic xác thực, lưu trữ tiến độ. Để chạy các lệnh này, bạn phải dùng lệnh `cd server` để di chuyển vào thư mục `server` trước.
-
-### Khởi tạo và chạy Server
-*   **`npm init -y`**
-    *   *Ý nghĩa:* Khởi tạo một dự án Node.js mới tinh trong thư mục `server`. Nó tự động tạo ra file `package.json` với các cấu hình mặc định (bỏ qua bước hỏi đáp dài dòng nhờ cờ `-y`).
-*   **`npm install`**
-    *   *Ý nghĩa:* Giống như Frontend, lệnh này dùng để cài đặt tất cả thư viện cần thiết cho server khi bạn mang source code sang máy khác.
-*   **`node server.js`** (hoặc khai báo lệnh `npm run dev` trong package.json)
-    *   *Ý nghĩa:* Lệnh gốc của Node.js để chạy file `server.js`, khởi động máy chủ API ở cổng `localhost:5000` và kết nối với MongoDB.
+Khu vực này chứa máy chủ Node.js kết nối với cơ sở dữ liệu MongoDB và xử lý logic xác thực, lưu trữ tiến độ. 
 
 ### Cài đặt các thư viện thiết yếu cho Backend
 Đây là một tổ hợp các thư viện nền tảng tạo nên Backend của DictaFlow, được cài bằng lệnh: 
-> `npm install express mongoose cors dotenv bcryptjs jsonwebtoken axios uuid youtube-dl-exec nodemailer`
+> `npm install express mongoose cors dotenv bcryptjs jsonwebtoken axios uuid youtube-dl-exec nodemailer --workspace=server`
 
 Giải thích chi tiết từng thư viện trong lệnh trên:
-*   **`express`**: Framework cốt lõi để xây dựng máy chủ web và các API Router (như `/api/auth/login`).
-*   **`mongoose`**: Thư viện ODM (Object Data Modeling) giúp kết nối và thao tác với cơ sở dữ liệu MongoDB dễ dàng qua các Schema (như `User`, `Lesson`).
-*   **`cors`**: Middleware bảo mật giúp cho phép Frontend (đang chạy ở cổng 3000) có quyền gửi API sang Backend (đang chạy ở cổng 5000) mà không bị trình duyệt chặn lỗi Cross-Origin.
+*   **`express`**: Framework cốt lõi để xây dựng máy chủ web và các API Router.
+*   **`mongoose`**: Thư viện ODM giúp kết nối và thao tác với cơ sở dữ liệu MongoDB.
+*   **`cors`**: Middleware bảo mật giúp cho phép Frontend có quyền gửi API sang Backend mà không bị trình duyệt chặn lỗi Cross-Origin.
 *   **`dotenv`**: Giúp Node.js đọc được các biến môi trường nhạy cảm từ file `.env` (như link kết nối DB, mật khẩu JWT, port).
-*   **`bcryptjs`**: Thư viện dùng để băm (mã hóa) mật khẩu của người dùng thành các chuỗi ký tự vô nghĩa trước khi lưu vào DB, đảm bảo bảo mật không bị lộ mật khẩu.
-*   **`jsonwebtoken`**: (Hay gọi tắt là JWT). Dùng để tạo ra các Token bảo mật cấp cho người dùng sau khi đăng nhập thành công. Token này giống như "thẻ căn cước" để gọi các API khác.
-*   **`uuid`**: Thư viện tạo ra các chuỗi ID ngẫu nhiên, độc nhất vô nhị (dùng để gán ID cho bài học, ID câu văn...).
+*   **`bcryptjs`**: Thư viện dùng để băm (mã hóa) mật khẩu của người dùng thành các chuỗi ký tự vô nghĩa trước khi lưu vào DB.
+*   **`jsonwebtoken`**: Dùng để tạo ra các Token bảo mật cấp cho người dùng sau khi đăng nhập thành công. 
+*   **`uuid`**: Thư viện tạo ra các chuỗi ID ngẫu nhiên, độc nhất vô nhị.
 *   **`youtube-dl-exec`**: Thư viện hỗ trợ trích xuất luồng âm thanh/video trực tiếp từ link YouTube, phục vụ tính năng "Tạo bài học từ link YouTube".
-*   **`nodemailer`**: Thư viện chuyên trị việc gửi Email tự động từ Node.js. Vừa được chúng ta cài đặt để phục vụ tính năng gửi mã OTP xác minh tài khoản!
+*   **`nodemailer`**: Thư viện chuyên trị việc gửi Email tự động từ Node.js (phục vụ gửi mã OTP xác minh tài khoản).
 
 ---
-
-## Lệnh khởi chạy Dự án (Frontend & Backend)
-
-Vì dự án được chia làm 2 phần (Frontend ở thư mục gốc và Backend ở thư mục `server/`), bạn cần chạy **song song 2 Terminal** để toàn bộ hệ thống hoạt động.
-
-### 1. Chạy Frontend (Giao diện Web)
-Mở một Terminal tại thư mục gốc của dự án (`c:\sk`):
-```bash
-npm run dev
-```
-*Lệnh này sẽ khởi động Vite Server. Sau đó bạn có thể mở trình duyệt và truy cập vào đường link hiển thị trên Terminal (thường là `http://localhost:5173` hoặc `http://localhost:3000`).*
-
-### 2. Chạy Backend (Máy chủ API & Database)
-Mở một Terminal thứ 2, di chuyển vào thư mục `server/`:
-```bash
-cd server
-```
-Sau đó, bạn có thể chạy một trong hai lệnh sau:
-*   **Chạy môi trường phát triển (có tự động khởi động lại khi sửa code):**
-    ```bash
-    npm run dev
-    ```
-    *(Yêu cầu đã cài đặt `nodemon` qua lệnh `npm install -g nodemon` hoặc `npm i -D nodemon`)*
-*   **Chạy môi trường bình thường (không tự khởi động lại):**
-    ```bash
-    npm start
-    ```
-*Lệnh này sẽ khởi động Node.js server tại `http://localhost:5000` và kết nối với MongoDB.*
-
----
-*Văn bản này được tự động tạo và tổng hợp dựa trên lịch sử cấu trúc dự án. Bạn có thể sử dụng file này như một tài liệu bàn giao (handover document).*
+*Văn bản này đã được cập nhật để phản ánh cấu trúc Monorepo mới của dự án.*

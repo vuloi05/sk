@@ -16,6 +16,8 @@ const LessonSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   tags: { type: [String], default: [] },
   thumbnail: { type: String, default: '' },
+  duration: { type: Number, default: 0 },
+  views: { type: Number, default: 0 },
   transcript: [SentenceSchema],
   created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });

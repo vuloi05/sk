@@ -5,8 +5,24 @@ const Lesson = require('../models/Lesson');
 // @access  Public
 exports.getLessons = async (req, res) => {
   try {
-    // Chỉ lấy các trường cần thiết để hiển thị Thư viện, không lấy mảng transcript nặng nề
-    const lessons = await Lesson.find({}).select('title type thumbnail level createdAt');
+    const lessons = await Lesson.aggregate([
+      {
+        $project: {
+          title: 1,
+          youtube_id: 1,
+          language: 1,
+          language: 1,
+          level: 1,
+          thumbnail: 1,
+          duration: 1,
+          views: 1,
+          tags: 1,
+          createdAt: 1,
+          sentence_count: { $size: { $ifNull: ['$transcript', []] } }
+        }
+      }
+    ]);
+    // aggregate doesn't return Mongoose documents, so id is _id. We'll let frontend handle _id
     res.json(lessons);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -18,7 +34,12 @@ exports.getLessons = async (req, res) => {
 // @access  Public
 exports.getLessonById = async (req, res) => {
   try {
-    const lesson = await Lesson.findById(req.params.id);
+    // Tăng views lên 1 mỗi khi lấy chi tiết bài học
+    const lesson = await Lesson.findByIdAndUpdate(
+      req.params.id, 
+      { $inc: { views: 1 } },
+      { new: true } // Trả về document sau khi update
+    );
     if (lesson) {
       res.json(lesson);
     } else {
@@ -53,7 +74,7 @@ exports.fetchYoutubeInfo = async (req, res) => {
 // @access  Private/Admin
 exports.createLesson = async (req, res) => {
   try {
-    const { title, youtube_id, language, level, description, tags, thumbnail, transcript } = req.body;
+    const { title, youtube_id, language, level, description, tags, thumbnail, duration, transcript } = req.body;
     
     // Nếu là tiếng Anh và chưa có level, thử tính toán level
     let finalLevel = level || 'Unknown';
@@ -70,12 +91,31 @@ exports.createLesson = async (req, res) => {
       description: description || '',
       tags: tags || [],
       thumbnail: thumbnail || '',
+      duration: duration || 0,
+      views: 0,
       transcript: transcript || [],
       created_by: req.user._id // user is injected by authMiddleware
     });
 
     const createdLesson = await lesson.save();
     res.status(201).json(createdLesson);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Xóa bài học
+// @route   DELETE /api/lessons/:id
+// @access  Private/Admin
+exports.deleteLesson = async (req, res) => {
+  try {
+    const lesson = await Lesson.findById(req.params.id);
+    if (!lesson) {
+      return res.status(404).json({ message: 'Không tìm thấy bài học' });
+    }
+    
+    await Lesson.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Đã xóa bài học thành công' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

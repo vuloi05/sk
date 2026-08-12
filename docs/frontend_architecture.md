@@ -31,7 +31,7 @@ Frontend được xây dựng bằng các công nghệ tối giản nhưng mạn
 
 ## 3. CẤU TRÚC MÃ NGUỒN (DIRECTORY STRUCTURE)
 
-Dự án Frontend (nằm trong thư mục `src/`) được quy hoạch theo mô hình phân lớp (Layered Architecture):
+Dự án Frontend (nằm trong thư mục `client/src/`) được quy hoạch theo mô hình phân lớp (Layered Architecture):
 
 - `main.js`: Trái tim của ứng dụng. Khởi tạo State, kiểm tra Xác thực, và vận hành hệ thống Điều hướng (Router) bằng lệnh `switch-case`.
 - `core/`: 

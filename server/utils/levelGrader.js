@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Đọc file Oxford 5000 vào bộ nhớ một lần duy nhất khi khởi động
-const oxfordFilePath = path.join(__dirname, '../../public/oxford_5000_vi.json');
+const oxfordFilePath = path.join(__dirname, '../../client/public/oxford_5000_vi.json');
 let oxfordData = [];
 try {
   const fileContent = fs.readFileSync(oxfordFilePath, 'utf8');

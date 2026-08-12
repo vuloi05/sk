@@ -101,6 +101,7 @@ exports.fetchYoutubeMetadataAndTranscript = async (url) => {
     title: output.title,
     youtube_id: output.id,
     thumbnail: output.thumbnail,
+    duration: output.duration || 0,
     language: detectedLang,
     transcript
   };
