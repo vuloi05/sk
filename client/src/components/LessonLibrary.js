@@ -69,19 +69,21 @@ function renderHeroSection(lessons) {
           },
             h('div', { className: 'container' },
               h('div', { className: 'row' },
-                h('div', { className: 'hero__text' },
-                  h('div', { className: 'label' }, lang),
-                  h('h2', {}, lesson.title),
-                  h('p', {}, lesson.description || 'Tham gia luyện nghe qua bài học thú vị này để nâng cao trình độ của bạn!'),
-                  h('a', { 
-                    href: '#',
-                    onClick: (e) => {
-                      e.preventDefault();
-                      openLessonDetail(lesson);
-                    }
-                  }, 
-                    h('span', {}, 'HỌC NGAY'),
-                    h('i', { className: 'fa fa-angle-right' })
+                h('div', { className: 'col-lg-6' },
+                  h('div', { className: 'hero__text' },
+                    h('div', { className: 'label' }, lang),
+                    h('h2', {}, lesson.title),
+                    h('p', {}, lesson.description || 'Tham gia luyện nghe qua bài học thú vị này để nâng cao trình độ của bạn!'),
+                    h('a', { 
+                      href: '#',
+                      onClick: (e) => {
+                        e.preventDefault();
+                        openLessonDetail(lesson);
+                      }
+                    }, 
+                      h('span', {}, 'HỌC NGAY'),
+                      h('i', { className: 'fa fa-angle-right' })
+                    )
                   )
                 )
               )
