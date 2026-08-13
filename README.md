@@ -64,9 +64,9 @@
    ```
 
 3. **Cấu hình biến môi trường:**
-   Tạo file `.env` ở thư mục `server/` và `.env` ở thư mục gốc:
+   Tạo file `.env` ở thư mục `server/` và `.env` ở thư mục `client/`:
    
-   **Frontend (`.env`)**
+   **Frontend (`client/.env`)**
    ```env
    VITE_API_URL=http://localhost:5000/api
    ```
