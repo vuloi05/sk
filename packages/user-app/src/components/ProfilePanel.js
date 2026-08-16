@@ -25,16 +25,13 @@ export function renderProfile() {
       // Khối 1: Thông tin tài khoản
       h('div', { className: 'card', style: { marginBottom: 'var(--space-lg)' } },
         h('div', { className: 'settings-section' },
-          h('div', { className: 'settings-section-title' }, '👤 Thông tin tài khoản'),
+          h('div', { className: 'settings-section-title' }, 'Thông tin tài khoản'),
           
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' } },
+          h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' } },
              h('img', { 
                 src: user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=random',
                 style: { width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }
-             }),
-             h('div', {},
-                h('div', { className: 'text-sm text-secondary' }, 'Ảnh đại diện được đồng bộ từ Google (nếu có)')
-             )
+             })
           ),
 
           h('div', { className: 'settings-row', style: { display: 'block', marginBottom: '1rem' } },
