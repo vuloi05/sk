@@ -118,7 +118,7 @@ export function renderAuthModal(onClose) {
                   h('button', { type: 'submit', className: 'auth-submit-btn', disabled: isLoading }, isLoading ? 'Đang xử lý...' : (isOTP || isReset ? 'XÁC NHẬN' : (isForgot ? 'GỬI MÃ KHÔI PHỤC' : (isLogin ? 'ĐĂNG NHẬP NGAY' : 'TẠO TÀI KHOẢN'))))
                 ),
                 (!isOTP && !isForgot && !isReset) ? h('div', { className: 'auth-divider' }, 'hoặc') : null,
-                (!isOTP && !isForgot && !isReset) ? h('div', { id: 'google-btn-wrapper', style: { display: 'flex', justifyContent: 'center', marginTop: '15px' } }) : null,
+                (!isOTP && !isForgot && !isReset) ? h('div', { id: 'google-btn-wrapper', style: { display: 'flex', justifyContent: 'flex-start', marginTop: '15px' } }) : null,
                 (() => {
                   if (isOTP || isReset) return h('a', { href: '#', className: 'auth-forget-pass', onClick: async (e) => { e.preventDefault(); if (isLoading) return; isLoading = true; updateDOM(); try { const res = isReset ? await forgotPassword(registeredEmail) : await resendOTP(registeredEmail); successMsg = res.message; errorMsg = ''; if (res.previewUrl) showToast('Mở F12 Console', 'info'); } catch (err) { errorMsg = 'Lỗi gửi lại OTP'; successMsg = ''; } isLoading = false; updateDOM(); } }, 'Gửi lại mã?');
                   if (isForgot) return h('a', { href: '#', className: 'auth-forget-pass', onClick: (e) => { e.preventDefault(); isForgot = false; isLogin = true; updateDOM(); } }, 'Quay lại đăng nhập');

@@ -1439,7 +1439,6 @@
 .auth-breadcrumb {
   position: relative;
   height: 260px;
-  background-image: url('https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -1497,7 +1496,7 @@
 }
 
 .auth-section {
-  padding: 80px 0 100px;
+  padding: 40px 0 100px;
 }
 
 .auth-container {
@@ -1616,10 +1615,9 @@
   font-size: 15px;
   color: #ffffff;
   display: inline-block;
-  margin-left: 20px;
+  margin-top: 20px;
   text-decoration: none;
   position: relative;
-  top: -2px;
 }
 .auth-forget-pass:hover {
   color: var(--color-primary);
