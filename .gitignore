@@ -27,3 +27,13 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Temporary audio files
+server/temp/*
+!server/temp/.gitkeep
+
+# Python (AI Server)
+ai-server/venv/
+ai-server/model_cache/
+__pycache__/
+*.pyc

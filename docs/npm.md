@@ -40,7 +40,7 @@ Khu vực này chứa máy chủ Node.js kết nối với cơ sở dữ liệu 
 
 ### Cài đặt các thư viện thiết yếu cho Backend
 Đây là một tổ hợp các thư viện nền tảng tạo nên Backend của DictaFlow, được cài bằng lệnh: 
-> `npm install express mongoose cors dotenv bcryptjs jsonwebtoken axios uuid youtube-dl-exec nodemailer --workspace=server`
+> `npm install express mongoose cors dotenv bcryptjs jsonwebtoken axios uuid youtube-dl-exec nodemailer form-data --workspace=server`
 
 Giải thích chi tiết từng thư viện trong lệnh trên:
 *   **`express`**: Framework cốt lõi để xây dựng máy chủ web và các API Router.
@@ -52,6 +52,7 @@ Giải thích chi tiết từng thư viện trong lệnh trên:
 *   **`uuid`**: Thư viện tạo ra các chuỗi ID ngẫu nhiên, độc nhất vô nhị.
 *   **`youtube-dl-exec`**: Thư viện hỗ trợ trích xuất luồng âm thanh/video trực tiếp từ link YouTube, phục vụ tính năng "Tạo bài học từ link YouTube".
 *   **`nodemailer`**: Thư viện chuyên trị việc gửi Email tự động từ Node.js (phục vụ gửi mã OTP xác minh tài khoản).
+*   **`form-data`**: Thư viện cấu trúc dữ liệu gửi dạng biểu mẫu (upload file), dùng để gửi file audio từ Backend lên AI Server (Python) qua HTTP.
 
 ---
 *Văn bản này đã được cập nhật để phản ánh cấu trúc Monorepo mới của dự án.*

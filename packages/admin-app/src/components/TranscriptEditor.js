@@ -1,0 +1,185 @@
+/**
+ * DictaFlow — Transcript Editor Component
+ *
+ * Allows users to review, edit, and publish transcribed content.
+ */
+
+import {  h, formatTime  } from '@dictaflow/shared';
+import {  store  } from '@dictaflow/shared';
+
+import {  audioManager  } from '@dictaflow/shared';
+import {  showToast  } from '@dictaflow/shared';
+import {  ROUTES, LEVELS  } from '@dictaflow/shared';
+import { getJlptLevel } from '../core/kanjiService.js';
+
+/**
+ * Render the transcript editor page.
+ * @returns {HTMLElement}
+ */
+export function renderTranscriptEditor() {
+  const data = store.get('transcriptData');
+  if (!data) {
+    return h('div', { className: 'page' },
+      h('div', { className: 'container text-center' },
+        h('p', {}, 'Không có dữ liệu transcript.'),
+        h('button', {
+          className: 'btn btn-primary mt-lg',
+          onClick: () => store.set('route', ROUTES.UPLOAD),
+        }, '← Quay lại Upload'),
+      ),
+    );
+  }
+
+  const page = h('div', { className: 'page' },
+    h('div', { className: 'container', style: { maxWidth: '800px' } },
+      // Header
+      h('div', { className: 'flex items-center justify-between mb-lg' },
+        h('div', {},
+          h('h1', { style: { marginBottom: '4px' } }, '📝 Xem lại Transcript'),
+          h('p', { className: 'text-secondary' }, `${data.title} — ${data.sentences.length} câu`),
+        ),
+        h('button', {
+          className: 'btn btn-ghost btn-sm',
+          onClick: () => store.set('route', ROUTES.UPLOAD),
+        }, '← Quay lại'),
+      ),
+
+      // Instruction
+      h('div', {
+        className: 'card',
+        style: { marginBottom: 'var(--space-lg)', borderColor: 'var(--color-accent-blue)', backgroundColor: 'rgba(28,176,246,0.05)' },
+      },
+        h('p', { className: 'text-sm' },
+          '💡 Kiểm tra và chỉnh sửa nếu AI nhận sai. Click vào câu để sửa nội dung.',
+        ),
+      ),
+
+      // Kanji Analysis placeholder (async loaded)
+      (() => {
+        const kanjiCard = h('div', { id: 'kanji-analysis-card', style: { display: 'none' } });
+        // Async load kanji analysis
+        const allText = data.sentences.map(s => s.text).join('');
+        if (data.language === 'ja') {
+          getJlptLevel(allText).then(analysis => {
+            if (analysis.totalKanji === 0) return;
+            kanjiCard.style.display = 'block';
+            kanjiCard.className = 'card mb-lg';
+            kanjiCard.style.borderColor = 'var(--color-accent-purple)';
+            kanjiCard.style.backgroundColor = 'rgba(206,130,255,0.05)';
+            
+            const dist = analysis.distribution;
+            const badges = [];
+            if (dist.N5) badges.push(`N5: ${dist.N5}`);
+            if (dist.N4) badges.push(`N4: ${dist.N4}`);
+            if (dist.N3) badges.push(`N3: ${dist.N3}`);
+            if (dist.N2) badges.push(`N2: ${dist.N2}`);
+            if (dist.N1) badges.push(`N1: ${dist.N1}`);
+            if (dist.unknown) badges.push(`Khác: ${dist.unknown}`);
+
+            const suggestedLabel = LEVELS[analysis.suggested]?.label || analysis.suggested;
+            let suggestedColor = LEVELS[analysis.suggested]?.color || 'var(--color-text)';
+            if (suggestedColor === 'green') suggestedColor = 'var(--color-correct)';
+            if (suggestedColor === 'blue') suggestedColor = 'var(--color-accent-blue)';
+            if (suggestedColor === 'purple') suggestedColor = 'var(--color-accent-purple)';
+
+            kanjiCard.innerHTML = `
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <span style="font-size:1.25rem">🌿</span>
+                <strong>Kanji: ${analysis.totalKanji} chữ</strong>
+                <span class="kanji-badge" style="color: ${suggestedColor}; border-color: ${suggestedColor}">Đề xuất: ${suggestedLabel}</span>
+                ${badges.map(b => `<span class="kanji-badge">${b}</span>`).join('')}
+              </div>
+            `;
+          });
+        }
+        return kanjiCard;
+      })(),
+
+      // Sentences list
+      h('div', { className: 'card transcript-editor', id: 'sentence-list' },
+        ...data.sentences.map((s, i) =>
+          h('div', { className: 'transcript-sentence' },
+            h('div', { className: 'transcript-sentence-number' }, String(i + 1)),
+            h('div', { className: 'transcript-sentence-text' },
+              h('input', {
+                className: 'input',
+                type: 'text',
+                value: s.text,
+                dataset: { index: String(i) },
+                onChange: (e) => {
+                  data.sentences[i].text = e.target.value;
+                },
+              }),
+            ),
+            h('div', { className: 'transcript-sentence-time' },
+              `${formatTime(s.startTime)} - ${formatTime(s.endTime)}`,
+            ),
+          ),
+        ),
+      ),
+
+      // Actions
+      h('div', { className: 'flex gap-md mt-lg', style: { justifyContent: 'center' } },
+        // Practice locally
+        h('button', {
+          className: 'btn btn-blue btn-lg',
+          onClick: () => practiceLocally(data),
+        }, '▶️ Luyện ngay'),
+      ),
+
+      h('p', { className: 'text-center text-sm text-muted mt-md' },
+        'Luyện ngay = chỉ luyện trên máy bạn.',
+      ),
+    ),
+  );
+
+  return page;
+}
+
+/**
+ * Start practice with current transcript data (local only).
+ * @param {Object} data
+ */
+async function practiceLocally(data) {
+  store.showLoading('Đang chuẩn bị bài luyện...');
+  
+  try {
+    if (data.sourceType === 'youtube' && data.youtubeVideoId) {
+      await audioManager.loadYouTube(data.youtubeVideoId);
+    } else {
+      const file = store.get('uploadedFile');
+      if (file) {
+        audioManager.loadFile(file);
+      }
+    }
+  } catch (err) {
+    store.hideLoading();
+    showToast('Lỗi khi tải media: ' + err.message, 'error');
+    return;
+  }
+
+  store.update({
+    currentLesson: {
+      id: 'local-' + Date.now(),
+      title: data.title,
+      language: data.language,
+      level: data.level,
+      source_type: data.sourceType || 'upload',
+      youtube_url: data.youtubeUrl || null,
+    },
+    currentSentences: data.sentences.map((s, i) => ({
+      id: `local-s${i}`,
+      order_index: i,
+      content: s.text,
+      start_time: s.startTime,
+      end_time: s.endTime,
+      gap_fill_data: s.gapFillData ? JSON.stringify(s.gapFillData) : null,
+      mcq_data: s.mcqData ? JSON.stringify(s.mcqData) : null,
+    })),
+    currentSentenceIndex: 0,
+    practiceResults: [],
+  });
+  
+  store.hideLoading();
+  store.set('route', ROUTES.MODE_SELECT);
+}

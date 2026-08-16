@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "client",
-    "server"
+    "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=client\" \"npm run dev --workspace=server\"",
+    "dev": "concurrently \"npm run dev --workspace=@dictaflow/user-app\" \"npm run dev --workspace=@dictaflow/admin-app\" \"npm run dev --workspace=@dictaflow/server\"",
     "install:all": "npm install"
   },
   "devDependencies": {

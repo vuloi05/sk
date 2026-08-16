@@ -1,0 +1,12 @@
+# AI Server Dependencies
+
+# FastAPI
+fastapi
+uvicorn[standard]
+python-multipart
+
+# NeMo ASR toolkit 
+nemo_toolkit[asr]
+
+# Audio processing
+pydub

@@ -1,0 +1,824 @@
+/* ===================================================================
+   DictaFlow — Landing Page Styles (Eduleb-Inspired Premium Design)
+   =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+
+.eduleb-landing {
+  font-family: 'DM Sans', 'Jost', 'Inter', sans-serif;
+  background-color: #ffffff;
+  color: #1a1a2e;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+.eduleb-landing h1,
+.eduleb-landing h2,
+.eduleb-landing h3,
+.eduleb-landing h4 {
+  font-family: 'Jost', 'Inter', sans-serif;
+  color: #0b104a;
+}
+
+/* ─── Navbar ─── */
+.eduleb-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 5%;
+  background: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.eduleb-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-decoration: none;
+}
+
+.eduleb-menu {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.eduleb-menu a {
+  text-decoration: none;
+  color: #4a5355;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+
+.eduleb-menu a:hover {
+  color: #525fe1;
+}
+
+.eduleb-auth {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.eduleb-auth .sign-in {
+  font-weight: 600;
+  color: #0b104a;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: color 0.3s;
+}
+
+.eduleb-auth .sign-in:hover {
+  color: #525fe1;
+}
+
+.eduleb-auth .sign-up {
+  background-color: #525fe1;
+  color: #ffffff;
+  padding: 0.75rem 1.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s;
+}
+
+.eduleb-auth .sign-up:hover {
+  background-color: #3f4bd0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(82, 95, 225, 0.35);
+}
+
+/* ─── Hero Section ─── */
+.eduleb-hero {
+  padding: 10rem 5% 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  background: linear-gradient(135deg, #f8f9ff 0%, #eef0ff 30%, #fff5eb 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.eduleb-hero::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(82, 95, 225, 0.08) 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+}
+
+.eduleb-hero-content {
+  flex: 1;
+  max-width: 580px;
+  position: relative;
+  z-index: 2;
+}
+
+.eduleb-hero-badge-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(82, 95, 225, 0.08);
+  color: #525fe1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 18px;
+  border-radius: 30px;
+  margin-bottom: 1.5rem;
+}
+
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  background: #525fe1;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.eduleb-hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #0b104a;
+  margin-bottom: 1.5rem;
+}
+
+.eduleb-hero-title span {
+  color: #525fe1;
+  display: block;
+}
+
+.eduleb-hero-desc {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #4a5355;
+  margin-bottom: 2rem;
+}
+
+.eduleb-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-hero-primary {
+  background: #525fe1;
+  color: #fff;
+  border: none;
+  padding: 16px 36px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+
+.btn-hero-primary:hover {
+  background: #3f4bd0;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(82, 95, 225, 0.35);
+}
+
+.btn-hero-ghost {
+  color: #0b104a;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px;
+  transition: color 0.3s;
+}
+
+.btn-hero-ghost:hover {
+  color: #525fe1;
+}
+
+.eduleb-hero-img {
+  flex: 1;
+  position: relative;
+  text-align: right;
+}
+
+.eduleb-hero-img img.main-img {
+  max-width: 85%;
+  height: auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* Hero Image 3D Effects */
+.hero-image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-girl-img {
+  position: relative;
+  z-index: 2;
+  animation: float-girl 6s ease-in-out infinite;
+  filter: drop-shadow(0 25px 40px rgba(82, 95, 225, 0.15));
+}
+
+@keyframes float-girl {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-18px); }
+  100% { transform: translateY(0px); }
+}
+
+.hero-shape {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+  animation: float-shape 8s ease-in-out infinite;
+}
+.hero-shape-1 {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #525fe1 0%, #a2a4f5 100%);
+  top: 5%;
+  left: -5%;
+  opacity: 0.15;
+}
+.hero-shape-2 {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f26b65 0%, #ff9f43 100%);
+  bottom: 15%;
+  right: 0%;
+  opacity: 0.2;
+  animation-delay: 2s;
+}
+.hero-shape-3 {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #2ecc71 0%, #1abc9c 100%);
+  top: 60%;
+  left: 10%;
+  opacity: 0.2;
+  animation-delay: 4s;
+}
+
+@keyframes float-shape {
+  0% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-20px) rotate(15deg); }
+  66% { transform: translateY(10px) rotate(-10deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* ─── Stats Counter Section ─── */
+.eduleb-stats {
+  padding: 0 5%;
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+}
+
+.stats-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(82, 95, 225, 0.08);
+  color: #525fe1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin: 0 auto 1rem;
+}
+
+.stat-icon.sc-two {
+  background: rgba(242, 107, 101, 0.08);
+  color: #f26b65;
+}
+
+.stat-icon.sc-three {
+  background: rgba(255, 150, 0, 0.08);
+  color: #ff9600;
+}
+
+.stat-icon.sc-four {
+  background: rgba(46, 204, 113, 0.08);
+  color: #2ecc71;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0b104a;
+  margin-bottom: 4px;
+}
+
+.stat-item p {
+  color: #6b6b84;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ─── How It Works Section ─── */
+.eduleb-how-it-works {
+  padding: 6rem 5%;
+  background: #ffffff;
+  text-align: center;
+}
+
+.eduleb-section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0b104a;
+  margin-bottom: 1rem;
+}
+
+.eduleb-section-desc {
+  font-size: 1.05rem;
+  color: #6b6b84;
+  max-width: 600px;
+  margin: 0 auto 4rem;
+  line-height: 1.7;
+}
+
+.eduleb-steps {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.eduleb-step {
+  flex: 1;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s;
+}
+
+.eduleb-step:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.step-num.sc-one {
+  background: rgba(82, 95, 225, 0.1);
+  color: #525fe1;
+}
+.step-num.sc-two {
+  background: rgba(242, 107, 101, 0.1);
+  color: #f26b65;
+}
+.step-num.sc-three {
+  background: rgba(255, 150, 0, 0.1);
+  color: #ff9600;
+}
+.step-num.sc-four {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.eduleb-step h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0b104a;
+  margin-bottom: 1rem;
+}
+
+.eduleb-step p {
+  color: #6b6b84;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* ─── About Section ─── */
+.eduleb-about {
+  padding: 6rem 5%;
+  display: flex;
+  align-items: center;
+  gap: 5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-content {
+  flex: 1;
+}
+
+.about-content .eduleb-section-title {
+  line-height: 1.25;
+  margin-bottom: 1.5rem;
+}
+
+.about-content b {
+  color: #525fe1;
+  font-weight: 700;
+}
+
+.about-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.about-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  color: #4a5355;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  background: rgba(82, 95, 225, 0.1);
+  color: #525fe1;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.btn-about-cta {
+  background: #525fe1;
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.btn-about-cta:hover {
+  background: #3f4bd0;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(82, 95, 225, 0.3);
+}
+
+.about-img {
+  flex: 1;
+  text-align: center;
+}
+
+.about-img img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+
+/* ─── Features Section ─── */
+.eduleb-features {
+  padding: 6rem 5%;
+  background: #f8f9ff;
+  text-align: center;
+}
+
+.eduleb-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  text-align: left;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.eduleb-feature-card {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s;
+  border: 1px solid transparent;
+}
+
+.eduleb-feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  border-color: rgba(82, 95, 225, 0.15);
+}
+
+.eduleb-feature-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.eduleb-feature-num {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  min-width: 50px;
+}
+
+.eduleb-feature-num.sc-one {
+  background: rgba(82, 95, 225, 0.1);
+  color: #525fe1;
+}
+.eduleb-feature-num.sc-two {
+  background: rgba(242, 107, 101, 0.1);
+  color: #f26b65;
+}
+.eduleb-feature-num.sc-three {
+  background: rgba(255, 150, 0, 0.1);
+  color: #ff9600;
+}
+.eduleb-feature-num.sc-four {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.eduleb-feature-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0b104a;
+  margin: 0;
+}
+
+.eduleb-feature-card p {
+  color: #6b6b84;
+  line-height: 1.65;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ─── Categories Section ─── */
+.eduleb-categories {
+  padding: 6rem 5%;
+  background: #ffffff;
+  text-align: center;
+}
+
+.eduleb-cat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 3rem;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.eduleb-cat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1rem 2rem;
+  background: #fff;
+  border-radius: 50px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  font-weight: 600;
+  color: #0b104a;
+  text-decoration: none;
+  transition: all 0.3s;
+  border: 1.5px solid #eef0f5;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.eduleb-cat-item:hover {
+  border-color: #525fe1;
+  color: #525fe1;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(82, 95, 225, 0.12);
+}
+
+.eduleb-cat-item.cat-item-accent {
+  background: linear-gradient(135deg, #525fe1, #7c83f7);
+  color: #fff;
+  border-color: transparent;
+}
+
+.eduleb-cat-item.cat-item-accent:hover {
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(82, 95, 225, 0.35);
+}
+
+.cat-flag {
+  font-size: 1.3rem;
+}
+
+/* ─── Footer ─── */
+.eduleb-footer {
+  background: #0b104a;
+  color: #c2c7e3;
+  padding: 0;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 4rem;
+  padding: 4rem 5% 3rem;
+  flex-wrap: wrap;
+}
+
+.footer-brand {
+  flex: 2;
+  min-width: 250px;
+}
+
+.footer-brand .eduleb-logo {
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.footer-brand p {
+  color: #8a90b8;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  max-width: 350px;
+}
+
+.footer-links {
+  flex: 1;
+  min-width: 150px;
+}
+
+.footer-links h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  color: #8a90b8;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem 5%;
+  text-align: center;
+}
+
+.footer-bottom p {
+  font-size: 0.9rem;
+  color: #6b6b84;
+  margin: 0;
+}
+
+.footer-bottom a {
+  color: #7c83f7;
+  text-decoration: none;
+}
+
+.footer-bottom a:hover {
+  color: #fff;
+}
+
+
+
+/* ─── Responsive ─── */
+@media (max-width: 992px) {
+  .eduleb-hero {
+    flex-direction: column;
+    padding-top: 8rem;
+    text-align: center;
+    gap: 2rem;
+  }
+  .eduleb-hero-content {
+    max-width: 100%;
+  }
+  .eduleb-hero-title {
+    font-size: 2.8rem;
+  }
+  .eduleb-hero-title span {
+    display: inline;
+  }
+  .eduleb-hero-actions {
+    justify-content: center;
+  }
+  .eduleb-menu {
+    display: none;
+  }
+  .stats-container {
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    min-width: 45%;
+    margin-bottom: 1rem;
+  }
+  .eduleb-about {
+    flex-direction: column-reverse;
+    text-align: center;
+  }
+  .about-content .eduleb-section-title {
+    text-align: center !important;
+  }
+  .about-checklist li {
+    justify-content: center;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .eduleb-hero-title {
+    font-size: 2.2rem;
+  }
+  .eduleb-section-title {
+    font-size: 2rem;
+  }
+  .footer-top {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
