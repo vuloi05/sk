@@ -1,0 +1,8 @@
+Hi, this is Alex from Rapid Rides.
+I'm set to pick you up from the downtown bus terminal today.
+I see you've chosen a pickup point near the information desk,
+but it seems there's a lot of traffic in that area right now.
+Would you mind moving your pickup to the main exit of the terminal?
+That location is reserved for rideshare services.
+Please let me know if that works for you by replying through the app.
+Thanks!
