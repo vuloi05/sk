@@ -1,0 +1,8 @@
+I'd like to reconfirm my plane reservation.
+What flight are you taking?
+Flight 207.
+And your name, please?
+Henry Chandler.
+Yes, sir. You're booked on Flight 207.
+Please check in at the airport an hour before flight time.
+Thank you.
