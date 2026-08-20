@@ -1,0 +1,49 @@
+The first working computers in the 1950s and 1960s were large mainframe machines.
+In some ways, they were like large calculating machines.
+The U.S. government, the military and businesses and institutions used them for specific tasks.
+For example, they might be used to handle the payroll.
+As more uses were found for computers,
+the need to transfer data from one computer to another became a concern.
+In 1969, the U.S. government sponsored a program
+to explore ways for computers to transfer data over telephone lines.
+The first Internet was created with four computers linked together.
+Of course, computer use increased beyond anyone's expectations.
+Standards were developed that describe how data was to be transferred between computers.
+A common language for commands and communications emerged.
+Operating programs such as MS-DOS, UNIX, Macintosh and Windows came into existence.
+The Internet quickly expanded beyond government and military uses.
+The PC became the standard form of computer.
+Private agencies acted as hosts for Internet usage.
+Around 1982, there were 213 hosts;
+by 1986, there were 2,300.
+Today, there are millions.
+The role of computers expanded so quickly that the U.S.S.R.,
+which had discouraged computer use,
+found itself left behind by the U.S.A.
+Part of the reason for the collapse of the Soviet Union in 1989
+was that they had fallen too far behind the United States
+in high tech areas to ever catch up.
+One of the most popular uses of the computer is electronic mail, or e-mail.
+You can send a letter by computer over the Internet to anywhere in the world in seconds or less.
+And it doesn't cost anything extra.
+Now data can be transferred great distances almost instantaneously.
+Another major Internet use is the World Wide Web.
+In the early days, all web pages were text only.
+In the 1990s, it became possible to make web pages interactive and multi-media.
+Interactive means that readers could click on items on the web page and get more information.
+They could also communicate directly with the web-page owner.
+Multi-media means that web pages were no longer text only.
+They could also have graphics, film (video) and audio.
+This has helped to turn computers into popular entertainment.
+Nowadays, people spend hours every day surfing the net.
+However, there are some problems. For some people, computers are addictive.
+Many businesses are trying to control employees using the net during working hours.
+Since the Internet includes just about every kind of information, not all of it is good.
+You can find directions on how to become a criminal or a terrorist.
+There are scam artists who want to cheat you out of money.
+There are also aggressive, pornography salesmen,
+not to mention people who want to kill your computer with viruses.
+Since the Internet is not closely regulated, it's up to individual users to follow computer etiquette.
+Parents need to supervise their children's use of the net.
+Although the Internet has some disadvantages,
+many people see the net as one of the greatest inventions of modern times.
